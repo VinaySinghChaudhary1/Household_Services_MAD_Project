@@ -1,6 +1,12 @@
 from flask import Flask, render_template
 
+from db import db
+
 app = Flask(__name__)
+
+#.....connect app and db.........
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+db.init_app(app)
 
 @app.route('/')
 def index():
@@ -12,6 +18,9 @@ def about(user_name):
 
 # @app.route('/contact')
 
+@app.route('/base')
+def base():
+    return render_template('base.html')
 
 @app.route('/login')
 def login():
@@ -28,4 +37,6 @@ def register_supplier():
     return render_template('register_supplier.html')
         
 if __name__ == '__main__':
+    with app.app_context():   #to connect app and db
+        db.create_all()       #to create db
     app.run(debug=True)
