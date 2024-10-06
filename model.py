@@ -8,4 +8,6 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
-    role = db.Column(db.String)
+    role = db.Column(db.String)  #admin, customer, supplier
+
+    

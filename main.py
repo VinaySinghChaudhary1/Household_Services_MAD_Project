@@ -1,6 +1,8 @@
 from flask import Flask, render_template
 
 from db import db
+from model import User
+
 
 app = Flask(__name__)
 
@@ -24,19 +26,19 @@ def base():
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    return render_template('users/login.html')
 
 
 @app.route('/register_customer')
 def register_customer():
-    return render_template('register_customer.html')
+    return render_template('users/register_customer.html')
 
 
 @app.route('/register_supplier')
 def register_supplier():
-    return render_template('register_supplier.html')
+    return render_template('users/register_supplier.html')
         
 if __name__ == '__main__':
-    with app.app_context():   #to connect app and db
-        db.create_all()       #to create db
+    # with app.app_context():   #to connect app and db
+    #     db.create_all()       #to create db
     app.run(debug=True)
