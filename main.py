@@ -22,7 +22,7 @@ def about(user_name):
 
 @app.route('/base')
 def base():
-    return render_template('base.html')
+    return render_template('base_users.html')
 
 @app.route('/login')
 def login():

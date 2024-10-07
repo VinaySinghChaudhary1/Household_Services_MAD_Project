@@ -1,90 +1,96 @@
-{% extends 'base.html' %}
+{% extends 'base_users.html' %}
 
 {% block content %}
 
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="register-container bg-white p-5 rounded shadow">
-                    <h2 class="text-center mb-4">Supplier Registration</h2>
-                    <form id="supplierForm">
-                        <!-- First Name and Last Name on the same row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="fname" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="fullname" placeholder="Full name" required>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="lname" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" placeholder="Username" required>
-                            </div>
+    <div class="container mt-5 d-flex justify-content-center">
+        <div class="col-md-6">
+            <div class="register-container bg-white p-4 rounded shadow">
+                <h2 class="text-center mb-3" style="font-size: 1.5rem;">Supplier Registration</h2>
+                <form id="supplierForm">
+                    <!-- Full Name and Username on the same row -->
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label for="fullname" class="form-label" style="font-size: 0.9rem;">Full Name</label>
+                            <input type="text" class="form-control form-control-sm" id="fullname" placeholder="Full name" required>
                         </div>
 
-                        <!-- Email and Service Name on the same row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
-                            </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="username" class="form-label" style="font-size: 0.9rem;">Username</label>
+                            <input type="text" class="form-control form-control-sm" id="username" placeholder="Username" required>
+                        </div>
+                    </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="service_name" class="form-label">Service Name</label>
-                                <select class="form-select" id="service_name" required>
-                                    <option value="">Select a service</option>
-                                    <option value="ac_mobile_repair">AC Mobile Repair</option>
-                                    <option value="laptop_repair">Laptop Repair</option>
-                                    <option value="motorbike_repairs">Motorbike Repairs</option>
-                                    <option value="car_repairs">Car Repairs</option>
-                                    <option value="house_construction">House Construction</option>
-                                    <option value="others">Others</option>
-                                </select>
-                            </div>
+                    <!-- Email and Service Name on the same row -->
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label for="email" class="form-label" style="font-size: 0.9rem;">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="email" placeholder="Enter your email" required>
                         </div>
 
-                        <!-- Password and Confirm Password on the same row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" placeholder="Enter a password" required>
-                            </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="service_name" class="form-label" style="font-size: 0.9rem;">Service Name</label>
+                            <select class="form-select form-select-sm" id="service_name" required>
+                                <option value="">Select a service</option>
+                                <option value="ac_mobile_repair">AC Mobile Repair</option>
+                                <option value="laptop_repair">Laptop Repair</option>
+                                <option value="motorbike_repairs">Motorbike Repairs</option>
+                                <option value="car_repairs">Car Repairs</option>
+                                <option value="house_construction">House Construction</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                    </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="confirm_password" class="form-label">Confirm Password</label>
-                                <input type="password" class="form-control" id="confirm_password" placeholder="Confirm your password" required>
-                            </div>
+                    <!-- Password and Confirm Password on the same row -->
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label for="password" class="form-label" style="font-size: 0.9rem;">Password</label>
+                            <input type="password" class="form-control form-control-sm" id="password" placeholder="Enter a password" required>
                         </div>
 
-                        <!-- Experience (Years) and Address on the same row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="experience" class="form-label">Experience (Years)</label>
-                                <input type="number" class="form-control" id="experience" placeholder="Years of experience" required min="0">
-                            </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="confirm_password" class="form-label" style="font-size: 0.9rem;">Confirm Password</label>
+                            <input type="password" class="form-control form-control-sm" id="confirm_password" placeholder="Confirm your password" required>
+                        </div>
+                    </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="address" class="form-label">Address</label>
-                                <input type="text" class="form-control" id="address" placeholder="Enter your address" required>
-                            </div>
+                    <!-- Experience (Years) and Address on the same row -->
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label for="experience" class="form-label" style="font-size: 0.9rem;">Experience (Years)</label>
+                            <input type="number" class="form-control form-control-sm" id="experience" placeholder="Years of experience" required min="0">
                         </div>
 
-                        <!-- Pin Code and Upload Document on the same row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="pincode" class="form-label">Pin Code</label>
-                                <input type="text" class="form-control" id="pincode" placeholder="Enter your pin code" required>
-                            </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="address" class="form-label" style="font-size: 0.9rem;">Address</label>
+                            <input type="text" class="form-control form-control-sm" id="address" placeholder="Enter your address" required>
+                        </div>
+                    </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="document" class="form-label">Upload Document</label>
-                                <input type="file" class="form-control" id="document" required>
-                            </div>
+                    <!-- Role and Pin Code on the same row -->
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label for="role" class="form-label" style="font-size: 0.9rem;">Role</label>
+                            <input type="text" class="form-control form-control-sm" id="role" value="Supplier" readonly>
                         </div>
 
-                        <!-- Register Button -->
-                        <button type="submit" class="btn register-btn w-100 btn-primary">Register</button>
-                    </form>
-                </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="pincode" class="form-label" style="font-size: 0.9rem;">Pin Code</label>
+                            <input type="text" class="form-control form-control-sm" id="pincode" placeholder="Enter your pin code" required>
+                        </div>
+                    </div>
+
+                    <!-- Upload Document -->
+                    <div class="row">
+                        <div class="col-md-12 mb-2">
+                            <label for="document" class="form-label" style="font-size: 0.9rem;">Upload Document</label>
+                            <input type="file" class="form-control form-control-sm" id="document" required>
+                        </div>
+                    </div>
+
+                    <!-- Register Button -->
+                    <button type="submit" class="btn register-btn w-100 btn-primary btn-sm mt-3">Register</button>
+                </form>
             </div>
         </div>
     </div>
@@ -94,8 +100,8 @@
         document.getElementById('supplierForm').addEventListener('submit', function(event) {
             event.preventDefault();
             
-            let fname = document.getElementById('fname').value;
-            let lname = document.getElementById('lname').value;
+            let fullname = document.getElementById('fullname').value;
+            let username = document.getElementById('username').value;
             let email = document.getElementById('email').value;
             let service_name = document.getElementById('service_name').value;
             let password = document.getElementById('password').value;
@@ -106,7 +112,7 @@
             let documentFile = document.getElementById('document').files[0];
 
             // Perform simple validation
-            if (!fname || !lname || !email || !service_name || !password || !confirmPassword || !experience || !address || !pincode || !documentFile) {
+            if (!fullname || !username || !email || !service_name || !password || !confirmPassword || !experience || !address || !pincode || !documentFile) {
                 alert("All fields are required!");
             } else if (password !== confirmPassword) {
                 alert("Passwords do not match!");
