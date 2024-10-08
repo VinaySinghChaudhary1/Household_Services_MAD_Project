@@ -1,5 +1,10 @@
 {% extends 'base_users.html' %}
 
+{% block title %}
+login page
+{% endblock %}
+
+
 {% block content %}
 
     <div class="container mt-5">
@@ -8,25 +13,25 @@
                 <!-- Login container with yellow background -->
                 <div class="login-container p-5 rounded shadow" style="background-color: #ffeb3b;">
                     <h2 class="text-center mb-4">Login</h2>
-                    <form id="loginForm">
+                    <form id="loginForm" action="{{ url_for('login') }}" method="POST">
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="role" class="form-label">Role</label>
-                            <select class="form-select" id="role" required>
+                            <select class="form-select" id="role" name="role" required>
                                 <option value="">Select your role</option>
                                 <option value="admin">Admin</option>
                                 <option value="customer">Customer</option>
@@ -54,7 +59,8 @@
             if (!username || !password || !email || !role) {
                 alert("All fields are required!");
             } else {
-                alert("Login successful!");
+                // Proceed with form submission
+                event.target.submit();
             }
         });
     </script>
