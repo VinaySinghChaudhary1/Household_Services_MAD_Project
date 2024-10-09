@@ -17,8 +17,8 @@ db.init_app(app)
 app.app_context().push()
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home():
+    return render_template('home.html')
 
 @app.route('/about/<user_name>')
 def about(user_name):
@@ -34,30 +34,49 @@ def base():
 def login():
     if request.method == 'POST':
         # Retrieve form data
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        role = request.form['role']
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role')
 
-        # Query the user from the database
-        user_record = User.query.filter_by(username=username, email=email, password=password, role=role).first()
-        if user_record:
-            # Save user information in the session
-            session['user_id'] = user_record.user_id
-            session['username'] = user_record.username
-            session['role'] = user_record.role
+        # Query the user by username first
+        user_record = User.query.filter_by(username=username).first()
 
-            # Redirect to the appropriate dashboard based on the role
-            if user_record.role == "customer":
-                return redirect(url_for('customer_dashboard'))
-            elif user_record.role == "supplier":
-                return redirect(url_for('supplier_dashboard'))
-            elif user_record.role == "admin":
-                return redirect(url_for('admin_dashboard'))
+        # Check if the user exists
+        if not user_record:
+            flash("Username does not exist. Please check and try again.", "warning")
+            return redirect(url_for('login'))
 
-        else:
-            # Return login page with an error message if credentials are invalid
-            return render_template('users/login.html', error="Invalid credentials or role")
+        # Check if the email matches with the username
+        if user_record.email != email:
+            flash("Email does not match the username. Please check and try again.", "warning")
+            return redirect(url_for('login'))
+
+        # Check if the password matches
+        if user_record.password != password:
+            flash("Incorrect password. Please try again.", "warning")
+            return redirect(url_for('login'))
+
+        # Check if the role matches
+        if user_record.role != role:
+            flash("Role does not match with the user. Please check and try again.", "warning")
+            return redirect(url_for('login'))
+
+        # If all credentials are correct, save user information in the session
+        session['user_id'] = user_record.user_id
+        session['username'] = user_record.username
+        session['role'] = user_record.role
+
+        # Redirect to the appropriate dashboard based on the role with a success message
+        if user_record.role == "customer":
+            flash("Welcome, Customer!", "success")
+            return redirect(url_for('customer_dashboard'))
+        elif user_record.role == "supplier":
+            flash("Welcome, Supplier!", "success")
+            return redirect(url_for('supplier_dashboard'))
+        elif user_record.role == "admin":
+            flash("Welcome, Admin!", "success")
+            return redirect(url_for('admin_dashboard'))
 
     # Render the login page for GET request
     return render_template('users/login.html')
@@ -67,44 +86,47 @@ def login():
 def register_customer():
     if request.method == 'POST':
         # Retrieve form data
-        full_name = request.form['fullname']
-        username = request.form['username']
-        email = request.form['email']
-        address = request.form['address']
-        pincode = request.form['pincode']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
+        full_name = request.form.get('fullname')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        address = request.form.get('address')
+        pincode = request.form.get('pincode')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
         
-        # Validation checks
+        # Validation checks for password mismatch
         if password != confirm_password:
-            # Handle password mismatch
-            return render_template('users/register_customer.html', error="Passwords do not match")
+            flash("Passwords do not match. Please try again.", "warning")
+            return redirect(url_for('register_customer'))
 
-        # Check if email or username already exists
+        # Check if email or username already exists in the database
         existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
         if existing_user:
-            return render_template('users/register_customer.html', error="Email or username already exists")
+            flash("Email or username already exists. Please choose another one.", "danger")
+            return redirect(url_for('register_customer'))
 
-        # Create a new customer user instance
-        new_customer = User(
-            full_name=full_name,
-            username=username,
-            email=email,
-            password=password,
-            address=address,
-            pincode=pincode,
-            role="customer"
-        )
-        
-        # Add new customer to the database
-        db.session.add(new_customer)
-        db.session.commit()
+        try:
+            # Create a new customer user instance
+            new_customer = User(
+                full_name=full_name,
+                username=username,
+                email=email,
+                password=password,  # Remember to hash the password
+                address=address,
+                pincode=pincode,
+                role="customer"
+            )
+            
+            # Add new customer to the database
+            db.session.add(new_customer)
+            db.session.commit()
 
-        # Debug print to verify this point is reached
-        print("Registration successful, redirecting to login")
+            flash("Registration successful!", "success")
+            return redirect(url_for('login'))
 
-        # Redirect to the login page after successful registration
-        return redirect(url_for('login'))
+        except Exception as e:
+            flash("An error occurred during registration. Please try again.", "danger")
+            return redirect(url_for('register_customer'))
 
     # For GET request, render the registration page
     return render_template('users/register_customer.html')
@@ -127,49 +149,56 @@ def register_supplier():
 
         # Validation checks
         if password != confirm_password:
-            # Handle password mismatch
-            return render_template('users/register_supplier.html', error="Passwords do not match")
+            flash("Passwords do not match", "warning")
+            return redirect(url_for('register_supplier'))
 
         # Check if email or username already exists
         existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
         if existing_user:
-            return render_template('register_supplier.html', error="Email or username already exists")
+            flash("Email or username already exists", "danger")
+            return redirect(url_for('register_supplier'))
 
-        # Save the uploaded document if necessary (file storage logic can be implemented as needed)
-        document_filename = document.filename
-        document.save(f'Static/Documents/{document_filename}')
+        try:
+            # Save the uploaded document
+            document_filename = document.filename
+            document.save(f'Static/Documents/{document_filename}')
 
-        # Create a new supplier user instance
-        new_supplier = User(
-            full_name=full_name,
-            username=username,
-            email=email,
-            password=password,
-            address=address,
-            pincode=pincode,
-            role="supplier",
-            service_name=service_name,
-            experience_years=int(experience_years),
-            document=document_filename
-        )
-        
-        # Add new supplier to the database
-        db.session.add(new_supplier)
-        db.session.commit()
+            # Create a new supplier user instance
+            new_supplier = User(
+                full_name=full_name,
+                username=username,
+                email=email,
+                password=password,  # Ideally, hash the password before saving
+                address=address,
+                pincode=pincode,
+                role="supplier",
+                service_name=service_name,
+                experience_years=int(experience_years),
+                document=document_filename
+            )
+            
+            # Add new supplier to the database
+            db.session.add(new_supplier)
+            db.session.commit()
 
-        # Redirect to the login page after successful registration
-        return redirect(url_for('login'))
+            # Successful registration flash message
+            flash("Registration successful!", "success")
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            # Handle any errors during the registration process
+            flash("Something went wrong during registration. Please try again.", "danger")
+            return redirect(url_for('register_supplier'))
 
     # For GET request, render the registration page
     return render_template('users/register_supplier.html')
         
-
-# @app.route('/logout')
-
-@app.route('/customer_dashboard')
-def customer_dashboard():
-    return render_template('customer_dashboard.html')
-
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    # Clear the session data to log out the user
+    session.clear()
+    flash("You have been logged out successfully.", "success")
+    return redirect(url_for('home'))
 
 @app.route('/supplier_dashboard')
 def supplier_dashboard():

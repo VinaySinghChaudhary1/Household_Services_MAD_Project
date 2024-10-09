@@ -30,4 +30,3 @@ class User(db.Model):
         self.experience_years = experience_years
         self.document = document
 
-    
