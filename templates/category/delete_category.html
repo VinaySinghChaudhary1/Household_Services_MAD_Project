@@ -1,0 +1,16 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Delete Category
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Delete Category</h1>
+    <p>Are you sure you want to delete the category <strong>{{ category.category_name }}</strong>?</p>
+    <form action="{{ url_for('delete_category', category_id=category.category_id) }}" method="POST">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{{ url_for('category_dashboard') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

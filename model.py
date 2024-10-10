@@ -30,3 +30,15 @@ class User(db.Model):
         self.experience_years = experience_years
         self.document = document
 
+class Category(db.Model):
+    __tablename__ = "category"
+    category_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    category_name = db.Column(db.String, unique=True, nullable=False)
+    category_description = db.Column(db.String, nullable=False)
+    picture = db.Column(db.String)  # Path to the uploaded picture
+
+    def __init__(self, category_name, category_description, picture):
+        self.category_name = category_name
+        self.category_description = category_description
+        self.picture = picture
+

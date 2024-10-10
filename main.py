@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_session import Session
-
+from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
+import os
 from db import db
-from model import User
-
+from model import User, Category
 
 app = Flask(__name__)
 
@@ -15,6 +16,15 @@ app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///database.sqlite3'
 db.init_app(app)
 
 app.app_context().push()
+
+# -- Picture Upload  --
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # -- Home, About and Contact --
 @app.route('/')
@@ -40,7 +50,6 @@ def base_dashboard():
 
 
 # -- Login, Register and Logout --
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -63,8 +72,8 @@ def login():
             flash("Email does not match the username. Please check and try again.", "warning")
             return redirect(url_for('login'))
 
-        # Check if the password matches
-        if user_record.password != password:
+        # Check if the password matches (using hashed password check)
+        if not check_password_hash(user_record.password, password):
             flash("Incorrect password. Please try again.", "warning")
             return redirect(url_for('login'))
 
@@ -121,7 +130,7 @@ def register_customer():
                 full_name=full_name,
                 username=username,
                 email=email,
-                password=password,  # Remember to hash the password
+                password=generate_password_hash(password),  # Remember to hash the password
                 address=address,
                 pincode=pincode,
                 role="customer"
@@ -170,14 +179,14 @@ def register_supplier():
         try:
             # Save the uploaded document
             document_filename = document.filename
-            document.save(f'Static/Documents/{document_filename}')
+            document.save(f'static/Documents/{document_filename}')
 
             # Create a new supplier user instance
             new_supplier = User(
                 full_name=full_name,
                 username=username,
                 email=email,
-                password=password,  # Ideally, hash the password before saving
+                password=generate_password_hash(password),  # Remember to hash the password
                 address=address,
                 pincode=pincode,
                 role="supplier",
@@ -224,6 +233,77 @@ def customer_dashboard():
 def Admin_dashboard():
     return render_template('admin_dashboard.html')
 
+# -- Manage Categories --
+
+
+@app.route('/category/category_dashboard.html', methods=['GET'])
+def category_dashboard():
+    categories = Category.query.all()
+    return render_template('category/category_dashboard.html', categories=categories)
+
+
+@app.route('/create_category', methods=['GET', 'POST'])
+def create_category():
+    if request.method == 'POST':
+        category_name = request.form.get('category_name')
+        category_description = request.form.get('category_description')
+        picture = request.files.get('picture')
+
+        # Check if the category already exists
+        existing_category = Category.query.filter_by(category_name=category_name).first()
+        if existing_category:
+            flash("Category already exists.", "warning")
+            return redirect(url_for('create_category'))
+
+        # Validate the file
+        if picture and allowed_file(picture.filename):
+            filename = secure_filename(picture.filename)
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            picture.save(picture_path)
+
+            new_category = Category(category_name, category_description, filename)
+            db.session.add(new_category)
+            db.session.commit()
+            flash("Category created successfully.", "success")
+            return redirect(url_for('category_dashboard'))
+        else:
+            flash("Invalid picture format. Please upload an image file.", "warning")
+            return redirect(url_for('create_category'))
+
+    return render_template('category/create_category.html')
+
+@app.route('/edit_category/<int:category_id>', methods=['GET', 'POST'])
+def edit_category(category_id):
+    existing_category = Category.query.get_or_404(category_id)
+
+    if request.method == 'POST':
+        existing_category.category_name = request.form.get('category_name')
+        existing_category.category_description = request.form.get('category_description')
+        
+        picture = request.files.get('picture')
+        if picture and allowed_file(picture.filename):
+            filename = secure_filename(picture.filename)
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            picture.save(picture_path)
+            existing_category.picture = filename
+        
+        db.session.commit()
+        flash("Category updated successfully.", "success")
+        return redirect(url_for('category_dashboard'))
+
+    return render_template('category/edit_category.html', category=existing_category)
+
+@app.route('/delete_category/<int:category_id>', methods=['GET', 'POST'])
+def delete_category(category_id):
+    existing_category = Category.query.get_or_404(category_id)
+
+    if request.method == 'POST':
+        db.session.delete(existing_category)
+        db.session.commit()
+        flash("Category deleted successfully.", "success")
+        return redirect(url_for('category_dashboard'))
+
+    return render_template('category/delete_category.html', category=existing_category)
 
 #-- Run the app --
 if __name__ == '__main__':

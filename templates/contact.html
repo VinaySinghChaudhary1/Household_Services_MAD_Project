@@ -5,5 +5,39 @@ Contact Us
 {% endblock %}
 
 {% block content %}
-<h1>Contact Us</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <h1 class="card-title text-center mb-4">Contact Us</h1>
+                    <p class="text-center">Please feel free to reach out with any questions or concerns. We're here to help!</p>
+                    <div class="mb-4">
+                        <p><strong>Phone:</strong> 123-456-7890</p>
+                        <p><strong>Email:</strong> <a href="mailto:5sQ5A@example.com">5sQ5A@example.com</a></p>
+                        <p><strong>Address:</strong> 123 Main St, Anytown, USA</p>
+                    </div>
+                    <p class="text-center">We look forward to hearing from you! Thank you for choosing our service!</p>
+
+                    <!-- Contact Form -->
+                    <form action="{{ url_for('contact') }}" method="POST" class="mt-4">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name:</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="Your name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Your email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message:</label>
+                            <textarea id="message" name="message" class="form-control" rows="5" placeholder="Write your message here" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
