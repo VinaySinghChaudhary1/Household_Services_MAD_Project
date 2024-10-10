@@ -16,19 +16,30 @@ db.init_app(app)
 
 app.app_context().push()
 
+# -- Home, About and Contact --
 @app.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/about/<user_name>')
-def about(user_name):
-    return render_template('about.html', name=user_name)
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
-# @app.route('/contact')
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
 
+# -- Base Pages --
 @app.route('/base')
 def base():
     return render_template('base_users.html')
+
+@app.route('/base_dashboard')
+def base_dashboard():
+    return render_template('base_dashboard.html')
+
+
+# -- Login, Register and Logout --
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -81,7 +92,6 @@ def login():
     # Render the login page for GET request
     return render_template('users/login.html')
 
-
 @app.route('/register_customer', methods=['GET', 'POST'])
 def register_customer():
     if request.method == 'POST':
@@ -130,7 +140,6 @@ def register_customer():
 
     # For GET request, render the registration page
     return render_template('users/register_customer.html')
-
 
 @app.route('/register_supplier', methods=['GET', 'POST'])
 def register_supplier():
@@ -200,15 +209,23 @@ def logout():
     flash("You have been logged out successfully.", "success")
     return redirect(url_for('home'))
 
+
+# -- Dashboards --
+
 @app.route('/supplier_dashboard')
 def supplier_dashboard():
     return render_template('supplier_dashboard.html')
 
+@app.route('/customer_dashboard')
+def customer_dashboard():
+    return render_template('customer_dashboard.html')
 
 @app.route('/admin_dashboard')
 def Admin_dashboard():
     return render_template('admin_dashboard.html')
 
+
+#-- Run the app --
 if __name__ == '__main__':
     with app.app_context():   #to connect app and db
         db.create_all()       #to create db
