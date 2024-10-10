@@ -42,3 +42,20 @@ class Category(db.Model):
         self.category_description = category_description
         self.picture = picture
 
+class Service(db.Model):
+    __tablename__ = "service"
+    service_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)
+    service_name = db.Column(db.String, unique=True, nullable=False)
+    service_description = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    price = db.Column(db.Integer)
+    image = db.Column(db.String)  # Path to the uploaded image
+
+    def __init__(self, category_id, service_name, service_description, price, image):
+        self.category_id = category_id
+        self.service_name = service_name
+        self.service_description = service_description
+        self.price = price
+        self.image = image

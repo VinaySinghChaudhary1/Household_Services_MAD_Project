@@ -4,7 +4,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 import os
 from db import db
-from model import User, Category
+from model import User, Category, Service
 
 app = Flask(__name__)
 
@@ -233,14 +233,12 @@ def customer_dashboard():
 def Admin_dashboard():
     return render_template('admin_dashboard.html')
 
-# -- Manage Categories --
-
+# -- Manage Categories (Dashboard, Create, Edit, Delete) --
 
 @app.route('/category/category_dashboard.html', methods=['GET'])
 def category_dashboard():
     categories = Category.query.all()
     return render_template('category/category_dashboard.html', categories=categories)
-
 
 @app.route('/create_category', methods=['GET', 'POST'])
 def create_category():
@@ -304,6 +302,74 @@ def delete_category(category_id):
         return redirect(url_for('category_dashboard'))
 
     return render_template('category/delete_category.html', category=existing_category)
+
+# -- Manage Services (Dashboard, Create, Edit, Delete) --
+@app.route('/service_dashboard/<int:category_id>', methods=['GET'])
+def service_dashboard(category_id):
+    services = Service.query.filter_by(category_id=category_id).all()
+    category = Category.query.get_or_404(category_id)
+    return render_template('service/service_dashboard.html', services=services, category=category)
+
+@app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
+def create_service(category_id):
+    if request.method == 'POST':
+        service_name = request.form['service_name']
+        service_description = request.form['service_description']
+        price = request.form['price']
+        image = request.files['image']
+
+        if image and allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            new_service = Service(
+                category_id=category_id,
+                service_name=service_name,
+                service_description=service_description,
+                price=price,
+                image=filename
+            )
+            db.session.add(new_service)
+            db.session.commit()
+            flash('Service created successfully!', 'success')
+            return redirect(url_for('service_dashboard', category_id=category_id))
+        else:
+            flash('Invalid image file!', 'danger')
+
+    return render_template('service/create_service.html', category_id=category_id)
+
+@app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
+def edit_service(service_id):
+    service = Service.query.get_or_404(service_id)
+
+    if request.method == 'POST':
+        service.service_name = request.form['service_name']
+        service.service_description = request.form['service_description']
+        service.price = request.form['price']
+        image = request.files['image']
+
+        if image and allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            service.image = filename
+
+        db.session.commit()
+        flash('Service updated successfully!', 'success')
+        return redirect(url_for('service_dashboard', category_id=service.category_id))
+
+    return render_template('service/edit_service.html', service=service)
+
+@app.route('/delete_service/<int:service_id>', methods=['GET', 'POST'])
+def delete_service(service_id):
+    service = Service.query.get_or_404(service_id)
+
+    if request.method == 'POST':
+        db.session.delete(service)
+        db.session.commit()
+        flash('Service deleted successfully!', 'success')
+        return redirect(url_for('service_dashboard', category_id=service.category_id))
+
+    return render_template('service/delete_service.html', service=service)
 
 #-- Run the app --
 if __name__ == '__main__':

@@ -1,0 +1,30 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Edit Service
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Edit Service</h1>
+    <form action="{{ url_for('edit_service', service_id=service.service_id) }}" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="service_name" class="form-label">Service Name</label>
+            <input type="text" class="form-control" id="service_name" name="service_name" value="{{ service.service_name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="service_description" class="form-label">Service Description</label>
+            <textarea class="form-control" id="service_description" name="service_description" rows="3" required>{{ service.service_description }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" class="form-control" id="price" name="price" value="{{ service.price }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Service Image</label>
+            <input type="file" class="form-control" id="image" name="image">
+        </div>
+        <button type="submit" class="btn btn-primary">Update Service</button>
+    </form>
+</div>
+{% endblock %}
