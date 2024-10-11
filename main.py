@@ -218,6 +218,27 @@ def logout():
     flash("You have been logged out successfully.", "success")
     return redirect(url_for('home'))
 
+# -- Search route --
+@app.route('/search', methods=['GET'])
+def search():
+    # Get the search term from the request
+    query = request.args.get('query', '').strip()
+
+    if not query:
+        flash("Please provide a keyword to search.", "info")
+        return redirect(url_for('category_dashboard'))
+
+    # Perform case-insensitive search in categories and services
+    matched_categories = Category.query.filter(
+        (Category.category_name.ilike(f'%{query}%')) | (Category.category_description.ilike(f'%{query}%'))
+    ).all()
+
+    matched_services = Service.query.filter(
+        (Service.service_name.ilike(f'%{query}%')) | (Service.service_description.ilike(f'%{query}%'))
+    ).all()
+
+    # Render a search results template and pass the matches
+    return render_template('search_results.html', query=query, categories=matched_categories, services=matched_services)
 
 # -- Dashboards --
 

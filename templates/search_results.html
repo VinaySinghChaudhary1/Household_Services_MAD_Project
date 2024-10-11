@@ -1,0 +1,51 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Search Results
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Results for "{{ query }}"</h1>
+
+    {% if categories or services %}
+        <div class="mt-4">
+            <!-- Displaying matched categories -->
+            <h3>Categories</h3>
+            <div class="row">
+                {% for category in categories %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="{{ url_for('static', filename='uploads/' + category.picture) }}" class="card-img-top" alt="{{ category.category_name }}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ category.category_name }}</h5>
+                                <p class="card-text">{{ category.category_description }}</p>
+                                <a href="{{ url_for('service_dashboard', category_id=category.category_id) }}" class="btn btn-primary">Explore Services</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Displaying matched services -->
+            <h3 class="mt-5">Services</h3>
+            <div class="row">
+                {% for service in services %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="{{ url_for('static', filename='uploads/' + service.image) }}" class="card-img-top" alt="{{ service.service_name }}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service.service_name }}</h5>
+                                <p class="card-text">{{ service.service_description }}</p>
+                                <a href="{{ url_for('service_details', service_id=service.service_id) }}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <p>No matches found for "{{ query }}". Try searching with different keywords.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -59,3 +59,14 @@ class Service(db.Model):
         self.service_description = service_description
         self.price = price
         self.image = image
+
+# class Service_request(db.Model):
+#     __tablename__ = "service_request"
+#     service_request_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+#     service_id = db.Column(db.Integer, db.ForeignKey('service.service_id'), nullable=False)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+#     service_description = db.Column(db.String, nullable=False)
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+#     status = db.Column(db.String, default='pending')  # 'pending', 'accepted', 'rejected'

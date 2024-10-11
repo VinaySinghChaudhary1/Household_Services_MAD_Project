@@ -14,10 +14,10 @@
 
         /* Hero Section */
         .hero {
-            background: url('{{ url_for('static', filename='images/Home.jpg') }}') no-repeat center center;
-            background-size:cover;
-            height:100vh;
-            color:white;
+            background: url("{{ url_for('static', filename='images/Home.jpg') }}") no-repeat center center;
+            background-size: cover;
+            height: 100vh;
+            color: white;
             text-align: center;
             display: flex;
             justify-content: center;
@@ -141,35 +141,42 @@
         <h2 class="mb-5">Our Services</h2>
         <div class="row">
             <div class="col-md-4">
-                <div class="card service-card">
-                    <img src="{{ url_for('static', filename='uploads/laptop_repair.jpg') }}" class="card-img-top" alt="Laptop Repair" style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">Laptop Repair</h5>
-                        <p class="card-text">Professional laptop repair services for all brands.</p>
+                <a href="{{ url_for('category_dashboard', category_id=1) }}" class="text-decoration-none">
+                    <div class="card service-card">
+                        <img src="{{ url_for('static', filename='uploads/laptop_repair.jpg') }}" class="card-img-top" alt="Laptop Repair" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">Laptop Repair</h5>
+                            <p class="card-text">Professional laptop repair services for all brands.</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-4">
-                <div class="card service-card">
-                    <img src="{{ url_for('static', filename='uploads/house_cleaning.jpg') }}" class="card-img-top" alt="House Cleaning" style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">House Cleaning</h5>
-                        <p class="card-text">Get your house cleaning services by our expert professionals.</p>
+                <a href="{{ url_for('category_dashboard', category_id=2) }}" class="text-decoration-none">
+                    <div class="card service-card">
+                        <img src="{{ url_for('static', filename='uploads/house_cleaning.jpg') }}" class="card-img-top" alt="House Cleaning" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">House Cleaning</h5>
+                            <p class="card-text">Get your house cleaning services by our expert professionals.</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-4">
-                <div class="card service-card">
-                    <img src="{{ url_for('static', filename='uploads/electric_services.jpg') }}" class="card-img-top" alt="Electrical Services" style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">Electrical Services</h5>
-                        <p class="card-text">Our certified electricians are ready to assist with any electrical work.</p>
+                <a href="{{ url_for('category_dashboard', category_id=3) }}" class="text-decoration-none">
+                    <div class="card service-card">
+                        <img src="{{ url_for('static', filename='uploads/electric_services.jpg') }}" class="card-img-top" alt="Electrical Services" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">Electrical Services</h5>
+                            <p class="card-text">Our certified electricians are ready to assist with any electrical work.</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </div>
 </section>
+
 
     <!-- Footer -->
     <footer>
