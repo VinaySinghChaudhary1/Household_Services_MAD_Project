@@ -24,7 +24,10 @@ Edit Service
             <label for="image" class="form-label">Service Image</label>
             <input type="file" class="form-control" id="image" name="image">
         </div>
-        <button type="submit" class="btn btn-primary">Update Service</button>
+        <div class="mb-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Update Service</button>
+            <a href="{{ url_for('service_dashboard', category_id=service.category_id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
 </div>
 {% endblock %}

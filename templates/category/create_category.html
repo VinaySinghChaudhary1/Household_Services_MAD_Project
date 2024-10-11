@@ -20,7 +20,10 @@ Create Category
             <label for="picture" class="form-label">Category Picture</label>
             <input type="file" class="form-control" id="picture" name="picture" accept="image/*">
         </div>
-        <button type="submit" class="btn btn-primary">Create Category</button>
+        <div class="mb-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Create Category</button>
+            <a href="{{ url_for('category_dashboard') }}" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
 </div>
 {% endblock %}

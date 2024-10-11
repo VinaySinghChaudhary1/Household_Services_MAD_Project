@@ -14,10 +14,10 @@
 
         /* Hero Section */
         .hero {
-            background: url('https://via.placeholder.com/1600x600') no-repeat center center;
-            background-size: cover;
-            height: 100vh;
-            color: white;
+            background: url('{{ url_for('static', filename='images/Home.jpg') }}') no-repeat center center;
+            background-size:cover;
+            height:100vh;
+            color:white;
             text-align: center;
             display: flex;
             justify-content: center;
@@ -28,10 +28,13 @@
         .hero h1 {
             font-size: 4rem;
             font-weight: bold;
+            color: #f2ff00;
         }
 
         .hero p {
             font-size: 1.5rem;
+            font-style: italic;
+            color: #ffffff; /* Change this to your desired color */
         }
 
         /* Floating Popup Card */
@@ -121,7 +124,6 @@
         <h3>Welcome Back!</h3>
         <p>Access your account or register now to enjoy our services</p>
         <a href="/login" class="btn btn-primary w-100 mb-2">More Access</a>
-        <!-- <a href="register.html" class="btn btn-secondary w-100">New Registration</a> -->
     </div>
 
     <!-- Hero Section -->
@@ -133,41 +135,41 @@
         </div>
     </section>
 
-    <!-- Services Section -->
-    <section id="services" class="services text-center">
-        <div class="container">
-            <h2 class="mb-5">Our Services</h2>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card service-card">
-                        <img src="https://via.placeholder.com/400x300" class="card-img-top" alt="AC Repair">
-                        <div class="card-body">
-                            <h5 class="card-title">AC Repair</h5>
-                            <p class="card-text">Professional air conditioning repair services for all brands.</p>
-                        </div>
+<!-- Services Section -->
+<section id="services" class="services text-center">
+    <div class="container">
+        <h2 class="mb-5">Our Services</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card service-card">
+                    <img src="{{ url_for('static', filename='uploads/laptop_repair.jpg') }}" class="card-img-top" alt="Laptop Repair" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">Laptop Repair</h5>
+                        <p class="card-text">Professional laptop repair services for all brands.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card service-card">
-                        <img src="https://via.placeholder.com/400x300" class="card-img-top" alt="Plumbing">
-                        <div class="card-body">
-                            <h5 class="card-title">Plumbing</h5>
-                            <p class="card-text">Get your plumbing issues fixed by our expert technicians.</p>
-                        </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card service-card">
+                    <img src="{{ url_for('static', filename='uploads/house_cleaning.jpg') }}" class="card-img-top" alt="House Cleaning" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">House Cleaning</h5>
+                        <p class="card-text">Get your house cleaning services by our expert professionals.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card service-card">
-                        <img src="https://via.placeholder.com/400x300" class="card-img-top" alt="Electrical Services">
-                        <div class="card-body">
-                            <h5 class="card-title">Electrical Services</h5>
-                            <p class="card-text">Our certified electricians are ready to assist with any electrical work.</p>
-                        </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card service-card">
+                    <img src="{{ url_for('static', filename='uploads/electric_services.jpg') }}" class="card-img-top" alt="Electrical Services" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">Electrical Services</h5>
+                        <p class="card-text">Our certified electricians are ready to assist with any electrical work.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Footer -->
     <footer>
