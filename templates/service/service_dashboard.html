@@ -11,35 +11,41 @@ Service Dashboard
         <a href="{{ url_for('create_service', category_id=category.category_id) }}" class="btn btn-primary">Add New Service</a>
     </div>
 
-    <div class="row">
-        {% for service in services %}
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    {% if service.image %}
-                        <img src="{{ url_for('static', filename='uploads/' + service.image) }}" class="card-img-top" alt="Service Image" style="height: 200px; object-fit: cover;">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='images/default-service.jpg') }}" class="card-img-top" alt="Default Service Image" style="height: 200px; object-fit: cover;">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title"><strong>Supplier Name: {{ service.supplier.full_name }}</strong></h5> <!-- Supplier Name as title -->
-                        <p class="card-text"><strong>Service Name:</strong> {{ service.service_name }}</p> <!-- Service Name as text -->
-                        <p class="card-text"><strong>Service Description:</strong> {{ service.service_description }}</p> <!-- Service Description as text -->
-                        
-                        <!-- Price and Experience in the same row -->
-                        <div class="d-flex justify-content-between">
-                            <p class="card-text"><strong>Price:</strong> ₹{{ service.price }}</p> <!-- Price -->
-                            <p class="card-text"><strong>Years of Experience:</strong> {{ service.supplier.experience_years }} years</p> <!-- Years of Experience -->
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{{ url_for('edit_service', service_id=service.service_id) }}" class="btn btn-warning me-2">Edit</a>
-                            <a href="{{ url_for('confirm_delete_service', service_id=service.service_id) }}" class="btn btn-danger me-2">Delete</a>
-                            <a href="{{ url_for('create_service_request', service_id=service.service_id) }}" class="btn btn-success ms-auto">Add to Cart</a>
+    <!-- Check if services exist -->
+    {% if services %}
+        <div class="row">
+            {% for service in services %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        {% if service.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + service.image) }}" class="card-img-top" alt="Service Image" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-service.jpg') }}" class="card-img-top" alt="Default Service Image" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title"><strong>Supplier Name: {{ service.supplier.full_name }}</strong></h5> <!-- Supplier Name as title -->
+                            <p class="card-text"><strong>Service Name:</strong> {{ service.service_name }}</p> <!-- Service Name as text -->
+                            <p class="card-text"><strong>Service Description:</strong> {{ service.service_description }}</p> <!-- Service Description as text -->
+                            
+                            <!-- Price and Experience in the same row -->
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text"><strong>Price:</strong> ₹{{ service.price }}</p> <!-- Price -->
+                                <p class="card-text"><strong>Years of Experience:</strong> {{ service.supplier.experience_years }} years</p> <!-- Years of Experience -->
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('edit_service', service_id=service.service_id) }}" class="btn btn-warning me-2">Edit</a>
+                                <a href="{{ url_for('confirm_delete_service', service_id=service.service_id) }}" class="btn btn-danger me-2">Delete</a>
+                                <a href="{{ url_for('create_service_request', service_id=service.service_id) }}" class="btn btn-success ms-auto">Add to Cart</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Display message if no services exist -->
+        <p class="text-center mt-4">No services available.</p>
+    {% endif %}
 </div>
 {% endblock %}

@@ -320,7 +320,12 @@ def create_category():
 
 @app.route('/edit_category/<int:category_id>', methods=['GET', 'POST'])
 def edit_category(category_id):
-    existing_category = Category.query.get_or_404(category_id)
+    existing_category = Category.query.get(category_id)
+
+    # Redirect if the category is not found
+    if not existing_category:
+        flash("The requested category does not exist.", "warning")
+        return redirect(url_for('category_dashboard'))
 
     if request.method == 'POST':
         existing_category.category_name = request.form.get('category_name')
@@ -341,7 +346,12 @@ def edit_category(category_id):
 
 @app.route('/delete_category/<int:category_id>', methods=['GET', 'POST'])
 def delete_category(category_id):
-    existing_category = Category.query.get_or_404(category_id)
+    existing_category = Category.query.get(category_id)
+
+    # Redirect if the category is not found
+    if not existing_category:
+        flash("The requested category does not exist.", "warning")
+        return redirect(url_for('category_dashboard'))
 
     if request.method == 'POST':
         db.session.delete(existing_category)
@@ -353,17 +363,29 @@ def delete_category(category_id):
 
 
 
+
 # -- Manage Services (Dashboard, Create, Edit, Delete) --
 @app.route('/service_dashboard/<int:category_id>', methods=['GET'])
 def service_dashboard(category_id):
+    # Check if the category exists
+    category = Category.query.get(category_id)
+    if not category:
+        flash('The requested category does not exist.', 'warning')
+        return redirect(url_for('category_dashboard'))  # Redirect to home if category doesn't exist
+    # Fetch services for the given category
     services = Service.query.filter_by(category_id=category_id).all()
-    category = Category.query.get_or_404(category_id)
     return render_template('service/service_dashboard.html', services=services, category=category)
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
 def create_service(category_id):
+    # Check if the category exists, if not, redirect to home
+    category = Category.query.get(category_id)
+    if not category:
+        flash('The requested category does not exist.', 'warning')
+        return redirect(url_for('category_dashboard'))
+
+    # Ensure the user is logged in and is a supplier
     if 'user_id' not in session or session.get('role') != 'supplier':
-        # Ensure the user is logged in and is a supplier
         flash('You must be logged in as a supplier to create a service.', 'danger')
         return redirect(url_for('login'))  # Redirect to login if not a supplier
 
@@ -401,7 +423,11 @@ def create_service(category_id):
 
 @app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
 def edit_service(service_id):
-    service = Service.query.get_or_404(service_id)
+    # Manually check if the service exists
+    service = Service.query.get(service_id)
+    if not service:
+        flash('The requested service does not exist.', 'warning')
+        return redirect(url_for('category_dashboard'))  # Redirect to service dashboard (use a default category ID)
 
     if request.method == 'POST':
         service.service_name = request.form['service_name']
@@ -423,7 +449,11 @@ def edit_service(service_id):
 
 @app.route('/confirm_delete_service/<int:service_id>', methods=['GET', 'POST'])
 def confirm_delete_service(service_id):
-    service = Service.query.get_or_404(service_id)
+    # Manually check if the service exists
+    service = Service.query.get(service_id)
+    if not service:
+        flash('The requested service does not exist.', 'warning')
+        return redirect(url_for('category_dashboard'))  # Redirect to a default category service dashboard (you can modify category_id)
 
     if request.method == 'POST':
         if request.form.get("confirm") == "yes":
@@ -438,6 +468,7 @@ def confirm_delete_service(service_id):
             return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/delete_service.html', service=service)
+
 
 
 
