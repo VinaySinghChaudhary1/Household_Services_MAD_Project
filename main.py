@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_session import Session
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
-import os
-from db import db
-from model import User, Category, Service
+from flask import Flask, render_template, request, redirect, url_for, flash, session    # for flask
+from flask_session import Session   # for session
+from werkzeug.security import check_password_hash, generate_password_hash # for hashing
+from werkzeug.utils import secure_filename     # for uploading
+from datetime import datetime    # for Datetime
+import os  # for path
+from db import db    # for db
+from model import User, Category, Service, ServiceRequest       # for models
 
 app = Flask(__name__)
 
@@ -26,6 +27,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+
 # -- Home, About and Contact --
 @app.route('/')
 def home():
@@ -39,6 +42,8 @@ def about():
 def contact():
     return render_template('contact.html')
 
+
+
 # -- Base Pages --
 @app.route('/base')
 def base():
@@ -47,6 +52,7 @@ def base():
 @app.route('/base_dashboard')
 def base_dashboard():
     return render_template('base_dashboard.html')
+
 
 
 # -- Login, Register and Logout --
@@ -87,16 +93,22 @@ def login():
         session['username'] = user_record.username
         session['role'] = user_record.role
 
-        # Redirect to the appropriate dashboard based on the role with a success message
-        if user_record.role == "customer":
-            flash("Welcome, Customer!", "success")
-            return redirect(url_for('customer_dashboard'))
-        elif user_record.role == "supplier":
-            flash("Welcome, Supplier!", "success")
-            return redirect(url_for('supplier_dashboard'))
-        elif user_record.role == "admin":
-            flash("Welcome, Admin!", "success")
-            return redirect(url_for('admin_dashboard'))
+        # Double check that user_id is properly set in the session
+        if 'user_id' in session:
+            # Redirect to the appropriate dashboard based on the role with a success message
+            if user_record.role == "customer":
+                flash("Welcome, Customer!", "success")
+                return redirect(url_for('customer_dashboard'))
+            elif user_record.role == "supplier":
+                flash("Welcome, Supplier!", "success")
+                return redirect(url_for('supplier_dashboard'))
+            elif user_record.role == "admin":
+                flash("Welcome, Admin!", "success")
+                return redirect(url_for('admin_dashboard'))
+        else:
+            # If user_id is not set, flash an error message and redirect to login
+            flash("An error occurred while setting session data. Please try again.", "danger")
+            return redirect(url_for('login'))
 
     # Render the login page for GET request
     return render_template('users/login.html')
@@ -218,6 +230,8 @@ def logout():
     flash("You have been logged out successfully.", "success")
     return redirect(url_for('home'))
 
+
+
 # -- Search route --
 @app.route('/search', methods=['GET'])
 def search():
@@ -240,22 +254,31 @@ def search():
     # Render a search results template and pass the matches
     return render_template('search_results.html', query=query, categories=matched_categories, services=matched_services)
 
+
+
 # -- Dashboards --
-
-@app.route('/supplier_dashboard')
-def supplier_dashboard():
-    return render_template('supplier_dashboard.html')
-
-@app.route('/customer_dashboard')
+@app.route('/customer_dashboard', methods=['GET'])
 def customer_dashboard():
-    return render_template('customer_dashboard.html')
+    user_id = session.get('user_id')
+    service_requests = ServiceRequest.query.filter_by(user_id=user_id).all()
+    return render_template('dashboard/customer_dashboard.html', service_requests=service_requests)
 
-@app.route('/admin_dashboard')
-def Admin_dashboard():
-    return render_template('admin_dashboard.html')
+@app.route('/supplier_dashboard', methods=['GET'])
+def supplier_dashboard():
+    user_id = session.get('user_id')
+    # Assuming a supplier can only manage their services
+    services = Service.query.filter_by(user_id=user_id).all()
+    service_requests = ServiceRequest.query.filter(ServiceRequest.service_id.in_([service.service_id for service in services])).all()
+    return render_template('dashboard/supplier_dashboard.html', service_requests=service_requests)
+
+@app.route('/admin_dashboard', methods=['GET'])
+def admin_dashboard():
+    service_requests = ServiceRequest.query.all()
+    return render_template('dashboard/admin_dashboard.html', service_requests=service_requests)
+
+
 
 # -- Manage Categories (Dashboard, Create, Edit, Delete) --
-
 @app.route('/category/category_dashboard.html', methods=['GET'])
 def category_dashboard():
     categories = Category.query.all()
@@ -324,6 +347,8 @@ def delete_category(category_id):
 
     return render_template('category/delete_category.html', category=existing_category)
 
+
+
 # -- Manage Services (Dashboard, Create, Edit, Delete) --
 @app.route('/service_dashboard/<int:category_id>', methods=['GET'])
 def service_dashboard(category_id):
@@ -333,18 +358,28 @@ def service_dashboard(category_id):
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
 def create_service(category_id):
+    if 'user_id' not in session or session.get('role') != 'supplier':
+        # Ensure the user is logged in and is a supplier
+        flash('You must be logged in as a supplier to create a service.', 'danger')
+        return redirect(url_for('login'))  # Redirect to login if not a supplier
+
     if request.method == 'POST':
+        # Extract form data
         service_name = request.form['service_name']
         service_description = request.form['service_description']
         price = request.form['price']
         image = request.files['image']
+        supplier_id = session['user_id']  # Use the logged-in supplier's user ID
 
+        # Handle file upload (image)
         if image and allowed_file(image.filename):
             filename = secure_filename(image.filename)
             image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+            # Create a new service
             new_service = Service(
                 category_id=category_id,
+                supplier_id=supplier_id,  # Link to the logged-in supplier
                 service_name=service_name,
                 service_description=service_description,
                 price=price,
@@ -352,12 +387,14 @@ def create_service(category_id):
             )
             db.session.add(new_service)
             db.session.commit()
+
             flash('Service created successfully!', 'success')
             return redirect(url_for('service_dashboard', category_id=category_id))
         else:
-            flash('Invalid image file!', 'danger')
+            flash('Invalid image file. Please upload a valid image file.', 'danger')
 
     return render_template('service/create_service.html', category_id=category_id)
+
 
 @app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
 def edit_service(service_id):
@@ -374,23 +411,100 @@ def edit_service(service_id):
             image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             service.image = filename
 
+        # Supplier ID remains unchanged
         db.session.commit()
         flash('Service updated successfully!', 'success')
         return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/edit_service.html', service=service)
 
-@app.route('/delete_service/<int:service_id>', methods=['GET', 'POST'])
-def delete_service(service_id):
+
+@app.route('/confirm_delete_service/<int:service_id>', methods=['GET', 'POST'])
+def confirm_delete_service(service_id):
     service = Service.query.get_or_404(service_id)
 
     if request.method == 'POST':
-        db.session.delete(service)
-        db.session.commit()
-        flash('Service deleted successfully!', 'success')
-        return redirect(url_for('service_dashboard', category_id=service.category_id))
+        if request.form.get("confirm") == "yes":
+            # Perform the delete operation
+            db.session.delete(service)
+            db.session.commit()
+            flash('Service deleted successfully!', 'success')
+            return redirect(url_for('service_dashboard', category_id=service.category_id))
+        else:
+            # If "No" is selected, cancel the deletion and return to the dashboard
+            flash('Service deletion canceled.', 'info')
+            return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/delete_service.html', service=service)
+
+
+
+
+
+
+# -- Service Requests (Dashboard, Create, Edit, Delete) --
+@app.route('/service_requests', methods=['GET'])
+def view_service_requests():
+    # Display all service requests for the logged-in user
+    if session.get('role') == 'customer':
+        service_requests = ServiceRequest.query.filter_by(user_id=session['user_id']).all()
+    elif session.get('role') == 'supplier':
+        service_requests = ServiceRequest.query.filter_by(supplier_id=session['user_id']).all()
+    else:  # Admin can see all service requests
+        service_requests = ServiceRequest.query.all()
+    return render_template('service_requests/service_requests.html', service_requests=service_requests)
+
+@app.route('/service_requests/create/<int:service_id>', methods=['GET', 'POST'])
+def create_service_request(service_id):
+    if request.method == 'POST':
+        service_description = request.form['service_description']
+        user_id = session['user_id']
+        price = request.form['price']
+        
+        new_request = ServiceRequest(service_id=service_id, user_id=user_id, service_description=service_description, price=price)
+        db.session.add(new_request)
+        db.session.commit()
+        flash('Service request created successfully!', 'success')
+        return redirect(url_for('view_service_requests'))
+
+    # Render the service request creation form
+    return render_template('service_requests/create_service_request.html', service_id=service_id)
+
+@app.route('/service_requests/update/<int:service_request_id>', methods=['GET', 'POST'])
+def update_service_request(service_request_id):
+    service_request = ServiceRequest.query.get_or_404(service_request_id)
+    
+    if request.method == 'POST':
+        status = request.form['status']
+        if status in ['accepted', 'rejected', 'completed', 'returned', 'cancelled']:
+            service_request.status = status
+            if status == 'accepted':
+                service_request.date_issued = datetime.utcnow()
+            elif status == 'completed':
+                service_request.date_completed = datetime.utcnow()
+            elif status == 'returned':
+                service_request.date_returned = datetime.utcnow()
+            db.session.commit()
+            flash('Service request updated successfully!', 'success')
+        else:
+            flash('Invalid status!', 'danger')
+        return redirect(url_for('view_service_requests'))
+
+    # Render the update form
+    return render_template('service_requests/update_service_request.html', service_request=service_request)
+
+@app.route('/service_requests/delete/<int:service_request_id>', methods=['GET', 'POST'])
+def delete_service_request(service_request_id):
+    service_request = ServiceRequest.query.get_or_404(service_request_id)
+
+    if request.method == 'POST':
+        db.session.delete(service_request)
+        db.session.commit()
+        flash('Service request deleted successfully!', 'success')
+        return redirect(url_for('view_service_requests'))
+
+    # Render confirmation page for deletion
+    return render_template('service_requests/delete_service_request.html', service_request_id=service_request_id)
 
 #-- Run the app --
 if __name__ == '__main__':

@@ -1,0 +1,54 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Admin Dashboard
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>All Service Requests</h1>
+
+    {% if service_requests %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Service Name</th>
+                    <th>Supplier Name</th>
+                    <th>Status</th>
+                    <th>Requested Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_requests %}
+                    <tr>
+                        <td>{{ request.user.full_name }}</td>
+                        <td>{{ request.service.service_name }}</td>
+                        <td>{{ request.service.user.full_name if request.supplier_id else 'Not Assigned' }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>{{ request.date_requested.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <form action="{{ url_for('update_service_request', service_request_id=request.service_request_id) }}" method="POST">
+                                <select name="status" class="form-select">
+                                    <option value="accepted">Accept</option>
+                                    <option value="rejected">Reject</option>
+                                    <option value="completed">Complete</option>
+                                    <option value="returned">Return</option>
+                                    <option value="cancelled">Cancel</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary mt-2">Update</button>
+                            </form>
+                            <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger mt-2">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No service requests found.</p>
+    {% endif %}
+</div>
+{% endblock %}

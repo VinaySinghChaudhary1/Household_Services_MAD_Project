@@ -1,0 +1,40 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Customer Dashboard
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Your Service Requests</h1>
+
+    {% if service_requests %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Status</th>
+                    <th>Requested Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_requests %}
+                    <tr>
+                        <td>{{ request.service.service_name }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>{{ request.date_requested.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">Cancel</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No service requests found.</p>
+    {% endif %}
+</div>
+{% endblock %}

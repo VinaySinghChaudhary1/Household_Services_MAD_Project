@@ -46,6 +46,7 @@ class Service(db.Model):
     __tablename__ = "service"
     service_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)  # Link to the supplier
     service_name = db.Column(db.String, unique=True, nullable=False)
     service_description = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -53,20 +54,43 @@ class Service(db.Model):
     price = db.Column(db.Integer)
     image = db.Column(db.String)  # Path to the uploaded image
 
-    def __init__(self, category_id, service_name, service_description, price, image):
+    # Establishing relationships
+    supplier = db.relationship('User', backref='services')  # Relationship to supplier (User)
+
+    def __init__(self, category_id, supplier_id, service_name, service_description, price, image):
         self.category_id = category_id
+        self.supplier_id = supplier_id  # Assign the supplier_id
         self.service_name = service_name
         self.service_description = service_description
         self.price = price
         self.image = image
+        self.created_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
 
-# class Service_request(db.Model):
-#     __tablename__ = "service_request"
-#     service_request_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-#     service_id = db.Column(db.Integer, db.ForeignKey('service.service_id'), nullable=False)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-#     service_description = db.Column(db.String, nullable=False)
-#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-#     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-#     status = db.Column(db.String, default='pending')  # 'pending', 'accepted', 'rejected'
+class ServiceRequest(db.Model):
+    __tablename__ = "service_requests"
+    service_request_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.service_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)  # Link to supplier (optional)
+    service_description = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    date_requested = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
+    date_issued = db.Column(db.DateTime, nullable=True)
+    date_completed = db.Column(db.DateTime, nullable=True)
+    date_returned = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String, default='pending')  # 'pending', 'accepted', 'rejected', 'completed', 'returned', 'cancelled'
+    price = db.Column(db.Integer, nullable=False)  # Price associated with the service
+
+    def __init__(self, service_id, user_id, service_description, price, supplier_id=None, date_requested=None, date_issued=None, date_completed=None, date_returned=None):
+        self.service_id = service_id
+        self.user_id = user_id
+        self.supplier_id = supplier_id
+        self.service_description = service_description
+        self.price = price
+        self.date_requested = date_requested or datetime.utcnow()
+        self.date_issued = date_issued
+        self.date_completed = date_completed
+        self.date_returned = date_returned
+        self.status = 'pending'
