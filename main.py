@@ -228,7 +228,7 @@ def logout():
     # Clear the session data to log out the user
     session.clear()
     flash("You have been logged out successfully.", "success")
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 
 
@@ -256,25 +256,29 @@ def search():
 
 
 
-# -- Dashboards --
+# -- Users Dashboards --
 @app.route('/customer_dashboard', methods=['GET'])
 def customer_dashboard():
     user_id = session.get('user_id')
+    # Fetch service requests for the logged-in customer
     service_requests = ServiceRequest.query.filter_by(user_id=user_id).all()
     return render_template('dashboard/customer_dashboard.html', service_requests=service_requests)
 
 @app.route('/supplier_dashboard', methods=['GET'])
 def supplier_dashboard():
     user_id = session.get('user_id')
-    # Assuming a supplier can only manage their services
-    services = Service.query.filter_by(user_id=user_id).all()
+    # Get all services where the logged-in supplier is the owner (supplier_id)
+    services = Service.query.filter_by(supplier_id=user_id).all()
+    # Fetch service requests related to the supplier's services
     service_requests = ServiceRequest.query.filter(ServiceRequest.service_id.in_([service.service_id for service in services])).all()
     return render_template('dashboard/supplier_dashboard.html', service_requests=service_requests)
 
 @app.route('/admin_dashboard', methods=['GET'])
 def admin_dashboard():
+    # Admin can view all service requests
     service_requests = ServiceRequest.query.all()
     return render_template('dashboard/admin_dashboard.html', service_requests=service_requests)
+
 
 
 
@@ -395,7 +399,6 @@ def create_service(category_id):
 
     return render_template('service/create_service.html', category_id=category_id)
 
-
 @app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
 def edit_service(service_id):
     service = Service.query.get_or_404(service_id)
@@ -418,7 +421,6 @@ def edit_service(service_id):
 
     return render_template('service/edit_service.html', service=service)
 
-
 @app.route('/confirm_delete_service/<int:service_id>', methods=['GET', 'POST'])
 def confirm_delete_service(service_id):
     service = Service.query.get_or_404(service_id)
@@ -436,9 +438,6 @@ def confirm_delete_service(service_id):
             return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/delete_service.html', service=service)
-
-
-
 
 
 

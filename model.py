@@ -56,7 +56,7 @@ class Service(db.Model):
 
     # Establishing relationships
     supplier = db.relationship('User', backref='services')  # Relationship to supplier (User)
-
+    
     def __init__(self, category_id, supplier_id, service_name, service_description, price, image):
         self.category_id = category_id
         self.supplier_id = supplier_id  # Assign the supplier_id
@@ -74,6 +74,7 @@ class ServiceRequest(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)  # Link to supplier (optional)
     service_description = db.Column(db.String, nullable=False)
+    experience_years = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     date_requested = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
@@ -83,11 +84,17 @@ class ServiceRequest(db.Model):
     status = db.Column(db.String, default='pending')  # 'pending', 'accepted', 'rejected', 'completed', 'returned', 'cancelled'
     price = db.Column(db.Integer, nullable=False)  # Price associated with the service
 
-    def __init__(self, service_id, user_id, service_description, price, supplier_id=None, date_requested=None, date_issued=None, date_completed=None, date_returned=None):
+    # Relationships
+    customer = db.relationship('User', foreign_keys=[user_id], backref='customer_requests')
+    supplier = db.relationship('User', foreign_keys=[supplier_id], backref='supplier_requests')
+    service = db.relationship('Service', backref='requests')
+
+    def __init__(self, service_id, user_id, service_description, experience_years, price, supplier_id=None, date_requested=None, date_issued=None, date_completed=None, date_returned=None):
         self.service_id = service_id
         self.user_id = user_id
         self.supplier_id = supplier_id
         self.service_description = service_description
+        self.experience_years = experience_years
         self.price = price
         self.date_requested = date_requested or datetime.utcnow()
         self.date_issued = date_issued
