@@ -6,6 +6,8 @@ from datetime import datetime    # for Datetime
 import os  # for path
 from db import db    # for db
 from model import User, Category, Service, ServiceRequest       # for models
+from functools import wraps  # for login_required
+
 
 app = Flask(__name__)
 
@@ -18,10 +20,25 @@ db.init_app(app)
 
 app.app_context().push()
 
+# -- Login Required Decorator --
+def login_required(role):
+    def wrapper(original):
+        @wraps(original)
+        def inner(*args, **kwargs):  # *args = list of arguments, **kwargs = key word arguments 
+            if session.get("username") and session.get("role") == role:
+                return original(*args, **kwargs)
+            else:
+                flash(f"You need to login as {role}", "warning")
+                return redirect(url_for("login"))
+
+        return inner
+
+    return wrapper
+
+
 # -- Picture Upload  --
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'txt', 'pdf', 'doc', 'docx'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
@@ -31,14 +48,17 @@ def allowed_file(filename):
 
 # -- Home, About and Contact --
 @app.route('/')
+@login_required(role="admin")
 def home():
     return render_template('home.html')
 
 @app.route('/about')
+@login_required(role="admin")
 def about():
     return render_template('about.html')
 
 @app.route('/contact')
+@login_required(role="admin")
 def contact():
     return render_template('contact.html')
 
@@ -46,10 +66,12 @@ def contact():
 
 # -- Base Pages --
 @app.route('/base')
+@login_required(role="admin")
 def base():
     return render_template('base_users.html')
 
 @app.route('/base_dashboard')
+@login_required(role="admin")
 def base_dashboard():
     return render_template('base_dashboard.html')
 
@@ -258,6 +280,7 @@ def search():
 
 # -- Users Dashboards --
 @app.route('/customer_dashboard', methods=['GET'])
+@login_required(role="customer")
 def customer_dashboard():
     user_id = session.get('user_id')
     # Fetch service requests for the logged-in customer
@@ -265,6 +288,7 @@ def customer_dashboard():
     return render_template('dashboard/customer_dashboard.html', service_requests=service_requests)
 
 @app.route('/supplier_dashboard', methods=['GET'])
+@login_required(role="supplier")
 def supplier_dashboard():
     user_id = session.get('user_id')
     # Get all services where the logged-in supplier is the owner (supplier_id)
@@ -274,6 +298,7 @@ def supplier_dashboard():
     return render_template('dashboard/supplier_dashboard.html', service_requests=service_requests)
 
 @app.route('/admin_dashboard', methods=['GET'])
+@login_required(role="admin")
 def admin_dashboard():
     # Admin can view all service requests
     service_requests = ServiceRequest.query.all()
@@ -289,7 +314,13 @@ def category_dashboard():
     return render_template('category/category_dashboard.html', categories=categories)
 
 @app.route('/create_category', methods=['GET', 'POST'])
+@login_required(role="admin, supplier")  # Add this line to ensure admin or supplier as decorator
 def create_category():
+    # Ensure the user is logged in and is either an admin or supplier
+    if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
+        flash('You must be logged in as an admin or supplier to create a category.', 'danger')
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         category_name = request.form.get('category_name')
         category_description = request.form.get('category_description')
@@ -319,6 +350,7 @@ def create_category():
     return render_template('category/create_category.html')
 
 @app.route('/edit_category/<int:category_id>', methods=['GET', 'POST'])
+@login_required(role="admin, supplier")
 def edit_category(category_id):
     existing_category = Category.query.get(category_id)
 
@@ -326,6 +358,11 @@ def edit_category(category_id):
     if not existing_category:
         flash("The requested category does not exist.", "warning")
         return redirect(url_for('category_dashboard'))
+
+    # Ensure the user is logged in and is either an admin or supplier
+    if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
+        flash('You must be logged in as an admin or supplier to edit a category.', 'danger')
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         existing_category.category_name = request.form.get('category_name')
@@ -345,6 +382,7 @@ def edit_category(category_id):
     return render_template('category/edit_category.html', category=existing_category)
 
 @app.route('/delete_category/<int:category_id>', methods=['GET', 'POST'])
+@login_required(role="admin, supplier")
 def delete_category(category_id):
     existing_category = Category.query.get(category_id)
 
@@ -353,6 +391,11 @@ def delete_category(category_id):
         flash("The requested category does not exist.", "warning")
         return redirect(url_for('category_dashboard'))
 
+    # Ensure the user is logged in and is either an admin or supplier
+    if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
+        flash('You must be logged in as an admin or supplier to delete a category.', 'danger')
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         db.session.delete(existing_category)
         db.session.commit()
@@ -360,7 +403,6 @@ def delete_category(category_id):
         return redirect(url_for('category_dashboard'))
 
     return render_template('category/delete_category.html', category=existing_category)
-
 
 
 
@@ -377,6 +419,7 @@ def service_dashboard(category_id):
     return render_template('service/service_dashboard.html', services=services, category=category)
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
+@login_required(role="admin, supplier")
 def create_service(category_id):
     # Check if the category exists, if not, redirect to home
     category = Category.query.get(category_id)
@@ -384,10 +427,10 @@ def create_service(category_id):
         flash('The requested category does not exist.', 'warning')
         return redirect(url_for('category_dashboard'))
 
-    # Ensure the user is logged in and is a supplier
-    if 'user_id' not in session or session.get('role') != 'supplier':
-        flash('You must be logged in as a supplier to create a service.', 'danger')
-        return redirect(url_for('login'))  # Redirect to login if not a supplier
+    # Ensure the user is logged in and is either an admin or supplier
+    if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
+        flash('You must be logged in as an admin or supplier to create a service.', 'danger')
+        return redirect(url_for('login'))  # Redirect to login if not authorized
 
     if request.method == 'POST':
         # Extract form data
@@ -395,7 +438,7 @@ def create_service(category_id):
         service_description = request.form['service_description']
         price = request.form['price']
         image = request.files['image']
-        supplier_id = session['user_id']  # Use the logged-in supplier's user ID
+        supplier_id = session['user_id']  # Use the logged-in user's ID (admin or supplier)
 
         # Handle file upload (image)
         if image and allowed_file(image.filename):
@@ -405,7 +448,7 @@ def create_service(category_id):
             # Create a new service
             new_service = Service(
                 category_id=category_id,
-                supplier_id=supplier_id,  # Link to the logged-in supplier
+                supplier_id=supplier_id,  # Link to the logged-in supplier or admin
                 service_name=service_name,
                 service_description=service_description,
                 price=price,
@@ -422,12 +465,18 @@ def create_service(category_id):
     return render_template('service/create_service.html', category_id=category_id)
 
 @app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
+@login_required(role="admin, supplier")
 def edit_service(service_id):
     # Manually check if the service exists
     service = Service.query.get(service_id)
     if not service:
         flash('The requested service does not exist.', 'warning')
         return redirect(url_for('category_dashboard'))  # Redirect to service dashboard (use a default category ID)
+
+    # Ensure the user is logged in and is either an admin or supplier
+    if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
+        flash('You must be logged in as an admin or supplier to edit this service.', 'danger')
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         service.service_name = request.form['service_name']
@@ -448,12 +497,18 @@ def edit_service(service_id):
     return render_template('service/edit_service.html', service=service)
 
 @app.route('/confirm_delete_service/<int:service_id>', methods=['GET', 'POST'])
+@login_required(role="admin, supplier")
 def confirm_delete_service(service_id):
     # Manually check if the service exists
     service = Service.query.get(service_id)
     if not service:
         flash('The requested service does not exist.', 'warning')
         return redirect(url_for('category_dashboard'))  # Redirect to a default category service dashboard (you can modify category_id)
+
+    # Ensure the user is logged in and is either an admin or supplier
+    if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
+        flash('You must be logged in as an admin or supplier to delete this service.', 'danger')
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         if request.form.get("confirm") == "yes":
@@ -468,8 +523,6 @@ def confirm_delete_service(service_id):
             return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/delete_service.html', service=service)
-
-
 
 
 # -- Service Requests (Dashboard, Create, Edit, Delete) --
@@ -535,6 +588,8 @@ def delete_service_request(service_request_id):
 
     # Render confirmation page for deletion
     return render_template('service_requests/delete_service_request.html', service_request_id=service_request_id)
+
+
 
 #-- Run the app --
 if __name__ == '__main__':
