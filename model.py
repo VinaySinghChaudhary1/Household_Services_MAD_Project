@@ -45,7 +45,7 @@ class Category(db.Model):
 class Service(db.Model):
     __tablename__ = "service"
     service_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)  # Link to Category model
     supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)  # Link to the supplier
     service_name = db.Column(db.String, unique=True, nullable=False)
     service_description = db.Column(db.String, nullable=False)
@@ -56,6 +56,7 @@ class Service(db.Model):
 
     # Establishing relationships
     supplier = db.relationship('User', backref='services')  # Relationship to supplier (User)
+    category = db.relationship('Category', backref='services')  # Relationship to Category
     
     def __init__(self, category_id, supplier_id, service_name, service_description, price, image):
         self.category_id = category_id
@@ -66,6 +67,7 @@ class Service(db.Model):
         self.image = image
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
+
 
 class ServiceRequest(db.Model):
     __tablename__ = "service_requests"

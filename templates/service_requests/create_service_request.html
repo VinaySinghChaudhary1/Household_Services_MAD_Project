@@ -12,14 +12,14 @@ Create Service Request
         <div class="mb-3">
             <label for="service_description" class="form-label">Service Description</label>
             <textarea class="form-control" id="service_description" name="service_description" rows="3" required>{{ service.service_description }}</textarea>
-            <small class="text-muted">This is the default service description set by the supplier. You can modify it if necessary.</small>
+            <strong class="text-muted">This is the default service description set by the supplier. You can modify it if you want.</strong>
         </div>
         
         <!-- Price Input Box (pre-populated from the service price) -->
         <div class="mb-3">
             <label for="price" class="form-label">Price</label>
             <input type="number" class="form-control" id="price" name="price" value="{{ service.price }}" required>
-            <small class="text-muted">This is the base price set by the supplier. You can modify it if necessary.</small>
+            <strong class="text-muted">This is the base price set by the supplier. You can modify it if you want.</strong>
         </div>
         
         <button type="submit" class="btn btn-primary">Submit Request</button>

@@ -291,7 +291,6 @@ def customer_dashboard():
                            service_requests=service_requests, 
                            history_requests=history_requests)
 
-
 @app.route('/supplier_dashboard', methods=['GET'])
 @login_required(role="supplier")
 def supplier_dashboard():
@@ -308,7 +307,6 @@ def supplier_dashboard():
                            service_requests=service_requests,
                            history_requests=history_requests)
 
-
 @app.route('/admin_dashboard', methods=['GET'])
 @login_required(role="admin")
 def admin_dashboard():
@@ -322,9 +320,54 @@ def admin_dashboard():
                            service_requests=service_requests, 
                            history_requests=history_requests)
 
+
+# -- Profile - Edit, Delete --
 @app.route('/profile', methods=['GET'])
 def profile():
-    return render_template('profile/profile.html')
+    user_id = session.get('user_id')
+    user = User.query.get_or_404(user_id)
+    return render_template('profile/profile.html', user=user)
+
+# @app.route('/change_password', methods=['GET', 'POST'])
+
+@app.route('/edit_profile/<int:user_id>/', methods=['GET', 'POST'])
+def edit_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    
+    # Only allow editing if the logged-in user matches the user_id in the URL
+    if user_id != session.get('user_id'):
+        flash("You do not have permission to edit this profile.", "danger")
+        return redirect(url_for('profile'))
+
+    if request.method == 'POST':
+        user.full_name = request.form.get('full_name')
+        user.username = request.form.get('username')
+        user.email = request.form.get('email')
+        user.address = request.form.get('address')
+        user.pincode = request.form.get('pincode')
+        
+        db.session.commit()
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('profile'))
+    
+    return render_template('profile/edit_profile.html', user=user)
+
+@app.route('/delete_profile/<int:user_id>/', methods=['GET', 'POST'])
+def delete_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    
+    # Only allow deleting if the logged-in user matches the user_id in the URL
+    if user_id != session.get('user_id'):
+        flash("You do not have permission to delete this profile.", "danger")
+        return redirect(url_for('profile'))
+    
+    if request.method == 'POST':
+        db.session.delete(user)
+        db.session.commit()
+        flash("Profile deleted successfully!", "success")
+        return redirect(url_for('login'))
+    
+    return render_template('profile/delete_profile.html', user=user)
 
 
 
@@ -573,12 +616,16 @@ def create_service_request(service_id):
         price = request.form['price']
         user_id = session['user_id']
 
+        # Optional experience years field
+        experience_years = request.form.get('experience_years', None)  # Fetch experience_years if provided
+
         # Create a new service request
         new_request = ServiceRequest(
             service_id=service_id,
             user_id=user_id,
             service_description=service_description,
-            price=price
+            price=price,
+            experience_years=experience_years  # Optional field passed here
         )
         db.session.add(new_request)
         db.session.commit()

@@ -18,23 +18,16 @@
             font-size: 1.1rem;
         }
 
-        .dropdown-menu li {
-            font-size: 1rem;
-        }
-
-        /* Customize background color */
-        .navbar {
-            background-color: #f8f9fa;
-        }
-
-        .login-btn {
+        .login-btn, .register-btn {
             background-color: #007bff;
             color: white;
+            font-size: 1.2rem; /* Increased button size */
         }
 
-        .login-btn:hover {
+        .login-btn:hover, .register-btn:hover {
             background-color: #0056b3;
         }
+
 
         /* Floating signup card */
         .floating-signup-card {
@@ -66,6 +59,7 @@
             text-decoration: underline;
         }
 
+        
         /* Footer styles */
         footer {
             background-color: #343a40;
@@ -126,61 +120,30 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/category/category_dashboard.html">Categories</a>
                     </li>
-
-                    <!-- Nested Dropdown menu -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Popular Services
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li class="dropdown-submenu">
-                                <a class="dropdown-item dropdown-toggle" href="/service_dashboard/1">Laptop Repair</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Sub Action 1</a></li>
-                                    <li><a class="dropdown-item" href="#">Sub Action 2</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown-submenu">
-                                <a class="dropdown-item dropdown-toggle" href="/service_dashboard/7">Salon Services</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Sub Action 1</a></li>
-                                    <li><a class="dropdown-item" href="#">Sub Action 2</a></li>
-                                </ul>
-                            </li>
-                            <!-- <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li> -->
-                        </ul>
-                    </li>
                 </ul>
 
-                <!-- Search bar -->
-                <!-- <form class="d-flex me-2" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form> -->
-
-                <!-- Static Login and Register Links -->
+                <!-- Dynamic Login/Register Buttons -->
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="btn login-btn me-2" href="/login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-outline-primary" href="/register_customer">Register</a>
-                    </li>
+                    {% if request.endpoint == 'login' %}
+                        <li class="nav-item">
+                            <a class="btn register-btn me-2" href="/register_customer">Register</a>
+                        </li>
+                    {% elif request.endpoint == 'register_customer' %}
+                        <li class="nav-item">
+                            <a class="btn login-btn me-2" href="/login">Login</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn login-btn me-2" href="/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn register-btn" href="/register_customer">Register</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-
-    <!-- Floating Signup Card -->
-    <!-- <div class="floating-signup-card">
-        <h5>Sign Up</h5>
-        <a href="/register_customer" class="btn btn-outline-primary w-100 mb-2">Customer Registration</a>
-        <a href="/register_supplier" class="btn btn-outline-secondary w-100">Supplier Registration</a>
-    </div> -->
 
     <!-- Content Block for Pages -->
     <div class="container mt-5">
@@ -200,30 +163,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
+
 </body>
-
-<!-- Javascript for Nested Dropdown -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Enable Bootstrap dropdown hover effect for nested dropdowns
-        document.querySelectorAll('.dropdown-submenu').forEach(function (element) {
-            element.addEventListener('mouseover', function () {
-                const submenu = this.querySelector('.dropdown-menu');
-                if (submenu) {
-                    submenu.classList.add('show');
-                }
-            });
-
-            element.addEventListener('mouseout', function () {
-                const submenu = this.querySelector('.dropdown-menu');
-                if (submenu) {
-                    submenu.classList.remove('show');
-                }
-            });
-        });
-    });
-</script>
-
-
 
 </html>

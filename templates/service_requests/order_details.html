@@ -18,8 +18,16 @@ Order Details
                 <td>{{ service_request.service.supplier.full_name }}</td>
             </tr>
             <tr>
-                <th>Service Description:</th>
+                <th>Service Category:</th> <!-- Display Service Category -->
+                <td>{{ service_request.service.category.category_name }}</td>
+            </tr>
+            <tr>
+                <th>Supplier's Service Description:</th>
                 <td>{{ service_request.service.service_description }}</td>
+            </tr>
+            <tr>
+                <th>Customer's Requested Service Description:</th> <!-- Customer's requested service description -->
+                <td>{{ service_request.service_description }}</td>
             </tr>
             <tr>
                 <th>Base Price (Supplier's Price):</th>

@@ -12,25 +12,25 @@
             font-weight: bold;
             font-size: 1.5rem;
         }
-
+    
         .nav-item .nav-link {
             font-size: 1.1rem;
         }
-
+    
         /* Customize background color */
         .navbar {
             background-color: #343a40;
             padding: 1rem;
         }
-
+    
         .navbar .nav-link, .navbar .navbar-brand {
             color: white;
         }
-
+    
         .navbar .nav-link:hover {
             color: #d4d4d4;
         }
-
+    
         /* Footer styles */
         footer {
             background-color: #343a40;
@@ -41,27 +41,28 @@
             position: relative;
             bottom: 0;
         }
-
+    
         footer a {
             color: #f8f9fa;
             margin: 0 10px;
             text-decoration: none;
         }
-
+    
         footer a:hover {
             text-decoration: underline;
         }
-
+    
         /* Ensure page content is scrollable on small screens */
         body {
             overflow-x: hidden;
         }
-
+    
         .container {
             max-width: 100%;
             padding: 0 15px;
         }
     </style>
+    
 </head>
 
 <body>
@@ -93,27 +94,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/category/category_dashboard.html">Category</a>
                     </li>
-                    <!-- New Dropdown Menu -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Services
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="/service_dashboard/1">Laptop Repair</a></li>
-                            <li><a class="dropdown-item" href="/service_dashboard/2">House Cleaning</a></li>
-                            <li><a class="dropdown-item" href="/service_dashboard/7">Saloon Sarvices</a></li>
-                            <!-- <li class="dropdown-submenu">
-                                <a class="dropdown-item dropdown-toggle" href="#">More Services</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Sub Service 1</a></li>
-                                    <li><a class="dropdown-item" href="#">Sub Service 2</a></li>
-                                </ul>
-                            </li> -->
-                        </ul>
-                    </li>
                 </ul>
-
 
                 <!-- Search Form -->
                 <form class="d-flex me-3" action="/search" method="GET">
@@ -121,9 +102,20 @@
                     <button class="btn btn-outline-light" type="submit">Search</button>
                 </form>
 
-                <!-- Conditional Login/Logout Links Based on User Session -->
+                <!-- Account Dropdown Menu -->
                 <ul class="navbar-nav">
                     {% if session.get('username') %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                Account
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="accountDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{% if session.get('role') == 'supplier' %}{{ url_for('supplier_dashboard') }}{% elif session.get('role') == 'customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'admin' %}{{ url_for('admin_dashboard') }}{% endif %}">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('view_service_requests') }}">Service Requests</a></li>
+                            </ul>
+                        </li>
                         <li class="nav-item">
                             <form action="{{ url_for('logout') }}" method="POST" class="d-inline">
                                 <button type="submit" class="btn btn-outline-danger">Logout</button>
@@ -140,7 +132,7 @@
     </nav>
 
     <!-- Content Block for Pages -->
-    <div class="container mt-5" style="min-height: 80vh;"> <!-- Added min-height -->
+    <div class="container mt-5" style="min-height: 80vh;">
         {% block content %}
         
         {% endblock %}

@@ -74,39 +74,16 @@ Service Requests
         <p>No service requests found.</p>
     {% endif %}
 
-    <!-- Service History Section -->
-    <h2 class="mt-5">Service History</h2>
-    {% if service_history %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Service Name</th>
-                    <th>Supplier Name</th>
-                    <th>Status</th>
-                    <th>Completion/Return Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for request in service_history %}
-                    <tr>
-                        <td>{{ request.service.service_name }}</td>
-                        <td>{{ request.service.supplier.full_name if request.service.supplier else 'Not Assigned' }}</td>
-                        <td>{{ request.status }}</td>
-                        <td>
-                            {% if request.status == 'completed' %}
-                                {{ request.date_completed.strftime('%Y-%m-%d') if request.date_completed else 'N/A' }}
-                            {% elif request.status == 'returned' %}
-                                {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No service history found.</p>
-    {% endif %}
+    <!-- Go Back Button -->
+    <div class="mt-4">
+        {% if session.get('role') == 'supplier' %}
+            <a href="{{ url_for('supplier_dashboard') }}" class="btn btn-secondary">Go Back to Supplier Dashboard</a>
+        {% elif session.get('role') == 'customer' %}
+            <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Go Back to Customer Dashboard</a>
+        {% elif session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Go Back to Admin Dashboard</a>
+        {% endif %}
+    </div>
 </div>
+
 {% endblock %}
