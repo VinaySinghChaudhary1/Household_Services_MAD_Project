@@ -78,7 +78,7 @@ class ServiceRequest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     date_requested = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
-    date_issued = db.Column(db.DateTime, nullable=True)
+    date_issued = db.Column(db.DateTime, nullable=True)  #accepted date
     date_completed = db.Column(db.DateTime, nullable=True)
     date_returned = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String, default='pending')  # 'pending', 'accepted', 'rejected', 'completed', 'returned', 'cancelled'

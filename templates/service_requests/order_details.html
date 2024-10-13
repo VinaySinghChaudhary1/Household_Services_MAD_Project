@@ -1,0 +1,70 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Order Details
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Order Details</h1>
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Service Name:</th>
+                <td>{{ service_request.service.service_name }}</td>
+            </tr>
+            <tr>
+                <th>Supplier Name:</th>
+                <td>{{ service_request.service.supplier.full_name }}</td>
+            </tr>
+            <tr>
+                <th>Service Description:</th>
+                <td>{{ service_request.service.service_description }}</td>
+            </tr>
+            <tr>
+                <th>Base Price (Supplier's Price):</th>
+                <td>₹{{ service_request.service.price }}</td>
+            </tr>
+            <tr>
+                <th>Customer Requested Price:</th>
+                <td>₹{{ service_request.price }}</td>
+            </tr>
+            <tr>
+                <th>Service Requested Date:</th>
+                <td>{{ service_request.date_requested.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            <tr>
+                <th>Status:</th>
+                <td>{{ service_request.status }}</td>
+            </tr>
+            <tr>
+                <th>Accepted Date:</th>
+                <td>{{ service_request.date_issued.strftime('%Y-%m-%d') if service_request.date_issued else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <th>Completion/Return Date:</th>
+                <td>
+                    {% if service_request.status == 'completed' %}
+                        {{ service_request.date_completed.strftime('%Y-%m-%d') if service_request.date_completed else 'N/A' }}
+                    {% elif service_request.status == 'returned' %}
+                        {{ service_request.date_returned.strftime('%Y-%m-%d') if service_request.date_returned else 'N/A' }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Go Back Button -->
+    <div class="mt-4">
+        {% if session.get('role') == 'supplier' %}
+            <a href="{{ url_for('supplier_dashboard') }}" class="btn btn-secondary">Go Back to Supplier Dashboard</a>
+        {% elif session.get('role') == 'customer' %}
+            <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Go Back to Customer Dashboard</a>
+        {% elif session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Go Back to Admin Dashboard</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

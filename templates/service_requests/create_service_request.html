@@ -8,14 +8,20 @@ Create Service Request
 <div class="container mt-5">
     <h1>Create a New Service Request</h1>
     <form action="{{ url_for('create_service_request', service_id=service_id) }}" method="POST">
+        <!-- Service Description Box (pre-populated from the service description) -->
         <div class="mb-3">
             <label for="service_description" class="form-label">Service Description</label>
-            <textarea class="form-control" id="service_description" name="service_description" rows="3" required></textarea>
+            <textarea class="form-control" id="service_description" name="service_description" rows="3" required>{{ service.service_description }}</textarea>
+            <small class="text-muted">This is the default service description set by the supplier. You can modify it if necessary.</small>
         </div>
+        
+        <!-- Price Input Box (pre-populated from the service price) -->
         <div class="mb-3">
             <label for="price" class="form-label">Price</label>
-            <input type="number" class="form-control" id="price" name="price" required>
+            <input type="number" class="form-control" id="price" name="price" value="{{ service.price }}" required>
+            <small class="text-muted">This is the base price set by the supplier. You can modify it if necessary.</small>
         </div>
+        
         <button type="submit" class="btn btn-primary">Submit Request</button>
         <a href="{{ url_for('view_service_requests') }}" class="btn btn-secondary">Cancel</a>
     </form>

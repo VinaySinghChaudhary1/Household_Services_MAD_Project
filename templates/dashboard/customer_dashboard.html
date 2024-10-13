@@ -8,6 +8,8 @@ Customer Dashboard
 <div class="container mt-5">
     <h1>Your Service Requests</h1>
 
+    <!-- Ongoing Requests Section -->
+    <h4>Ongoing Service Requests</h4>
     {% if service_requests %}
         <table class="table">
             <thead>
@@ -15,6 +17,7 @@ Customer Dashboard
                     <th>Service Name</th>
                     <th>Status</th>
                     <th>Requested Date</th>
+                    <th>Accepted Date</th> <!-- Added Accepted Date Column -->
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -24,17 +27,56 @@ Customer Dashboard
                         <td>{{ request.service.service_name }}</td>
                         <td>{{ request.status }}</td>
                         <td>{{ request.date_requested.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ request.date_issued.strftime('%Y-%m-%d') if request.date_issued else 'N/A' }}</td> <!-- Accepted Date -->
                         <td>
                             <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Cancel</button>
                             </form>
+                            <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info">Order Details</a>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p>No service requests found.</p>
+        <p>No ongoing service requests found.</p>
+    {% endif %}
+
+    <!-- Service History Section -->
+    <h4 class="mt-5">Service History</h4>
+    {% if history_requests %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Status</th>
+                    <th>Completion/Return Date</th> <!-- Modified header to include Completion/Return Date -->
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in history_requests %}
+                    <tr>
+                        <td>{{ request.service.service_name }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>
+                            {% if request.status == 'completed' %}
+                                {{ request.date_completed.strftime('%Y-%m-%d') if request.date_completed else 'N/A' }}
+                            {% elif request.status == 'returned' %}
+                                {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info">Order Details</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No service history found.</p>
     {% endif %}
 </div>
 {% endblock %}

@@ -48,17 +48,14 @@ def allowed_file(filename):
 
 # -- Home, About and Contact --
 @app.route('/')
-@login_required(role="admin")
 def home():
     return render_template('home.html')
 
 @app.route('/about')
-@login_required(role="admin")
 def about():
     return render_template('about.html')
 
 @app.route('/contact')
-@login_required(role="admin")
 def contact():
     return render_template('contact.html')
 
@@ -66,7 +63,7 @@ def contact():
 
 # -- Base Pages --
 @app.route('/base')
-@login_required(role="admin")
+@login_required(role="admin") # Add this line to ensure admin as decorator
 def base():
     return render_template('base_users.html')
 
@@ -283,9 +280,17 @@ def search():
 @login_required(role="customer")
 def customer_dashboard():
     user_id = session.get('user_id')
-    # Fetch service requests for the logged-in customer
-    service_requests = ServiceRequest.query.filter_by(user_id=user_id).all()
-    return render_template('dashboard/customer_dashboard.html', service_requests=service_requests)
+    
+    # Fetch ongoing service requests (pending and accepted)
+    service_requests = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+
+    # Fetch service history (completed or returned)
+    history_requests = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
+
+    return render_template('dashboard/customer_dashboard.html', 
+                           service_requests=service_requests, 
+                           history_requests=history_requests)
+
 
 @app.route('/supplier_dashboard', methods=['GET'])
 @login_required(role="supplier")
@@ -293,17 +298,33 @@ def supplier_dashboard():
     user_id = session.get('user_id')
     # Get all services where the logged-in supplier is the owner (supplier_id)
     services = Service.query.filter_by(supplier_id=user_id).all()
-    # Fetch service requests related to the supplier's services
-    service_requests = ServiceRequest.query.filter(ServiceRequest.service_id.in_([service.service_id for service in services])).all()
-    return render_template('dashboard/supplier_dashboard.html', service_requests=service_requests)
+    # Fetch ongoing service requests related to the supplier's services
+    service_requests = ServiceRequest.query.filter(ServiceRequest.service_id.in_([service.service_id for service in services]),
+                                                   ServiceRequest.status.in_(['pending', 'accepted'])).all()
+    # Fetch completed or returned service requests
+    history_requests = ServiceRequest.query.filter(ServiceRequest.service_id.in_([service.service_id for service in services]),
+                                                   ServiceRequest.status.in_(['completed', 'returned'])).all()
+    return render_template('dashboard/supplier_dashboard.html', 
+                           service_requests=service_requests,
+                           history_requests=history_requests)
+
 
 @app.route('/admin_dashboard', methods=['GET'])
 @login_required(role="admin")
 def admin_dashboard():
-    # Admin can view all service requests
-    service_requests = ServiceRequest.query.all()
-    return render_template('dashboard/admin_dashboard.html', service_requests=service_requests)
+    # Fetch ongoing service requests
+    service_requests = ServiceRequest.query.filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+    
+    # Fetch completed or returned service requests
+    history_requests = ServiceRequest.query.filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
 
+    return render_template('dashboard/admin_dashboard.html', 
+                           service_requests=service_requests, 
+                           history_requests=history_requests)
+
+@app.route('/profile', methods=['GET'])
+def profile():
+    return render_template('profile/profile.html')
 
 
 
@@ -314,7 +335,7 @@ def category_dashboard():
     return render_template('category/category_dashboard.html', categories=categories)
 
 @app.route('/create_category', methods=['GET', 'POST'])
-@login_required(role="admin, supplier")  # Add this line to ensure admin or supplier as decorator
+# @login_required(role="admin, supplier")  # Add this line to ensure admin or supplier as decorator
 def create_category():
     # Ensure the user is logged in and is either an admin or supplier
     if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
@@ -350,7 +371,7 @@ def create_category():
     return render_template('category/create_category.html')
 
 @app.route('/edit_category/<int:category_id>', methods=['GET', 'POST'])
-@login_required(role="admin, supplier")
+# @login_required(role="admin, supplier")
 def edit_category(category_id):
     existing_category = Category.query.get(category_id)
 
@@ -382,7 +403,7 @@ def edit_category(category_id):
     return render_template('category/edit_category.html', category=existing_category)
 
 @app.route('/delete_category/<int:category_id>', methods=['GET', 'POST'])
-@login_required(role="admin, supplier")
+# @login_required(role="admin, supplier")
 def delete_category(category_id):
     existing_category = Category.query.get(category_id)
 
@@ -419,7 +440,7 @@ def service_dashboard(category_id):
     return render_template('service/service_dashboard.html', services=services, category=category)
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
-@login_required(role="admin, supplier")
+# @login_required(role="admin, supplier")
 def create_service(category_id):
     # Check if the category exists, if not, redirect to home
     category = Category.query.get(category_id)
@@ -465,7 +486,7 @@ def create_service(category_id):
     return render_template('service/create_service.html', category_id=category_id)
 
 @app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
-@login_required(role="admin, supplier")
+# @login_required(role="admin, supplier")
 def edit_service(service_id):
     # Manually check if the service exists
     service = Service.query.get(service_id)
@@ -497,7 +518,7 @@ def edit_service(service_id):
     return render_template('service/edit_service.html', service=service)
 
 @app.route('/confirm_delete_service/<int:service_id>', methods=['GET', 'POST'])
-@login_required(role="admin, supplier")
+# @login_required(role="admin, supplier")
 def confirm_delete_service(service_id):
     # Manually check if the service exists
     service = Service.query.get(service_id)
@@ -528,30 +549,45 @@ def confirm_delete_service(service_id):
 # -- Service Requests (Dashboard, Create, Edit, Delete) --
 @app.route('/service_requests', methods=['GET'])
 def view_service_requests():
-    # Display all service requests for the logged-in user
     if session.get('role') == 'customer':
-        service_requests = ServiceRequest.query.filter_by(user_id=session['user_id']).all()
+        service_requests = ServiceRequest.query.filter_by(user_id=session['user_id']).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+        service_history = ServiceRequest.query.filter_by(user_id=session['user_id']).filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
     elif session.get('role') == 'supplier':
-        service_requests = ServiceRequest.query.filter_by(supplier_id=session['user_id']).all()
-    else:  # Admin can see all service requests
-        service_requests = ServiceRequest.query.all()
-    return render_template('service_requests/service_requests.html', service_requests=service_requests)
+        service_requests = ServiceRequest.query.filter_by(supplier_id=session['user_id']).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+        service_history = ServiceRequest.query.filter_by(supplier_id=session['user_id']).filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
+    else:
+        # Admin view
+        service_requests = ServiceRequest.query.filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+        service_history = ServiceRequest.query.filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
+    return render_template('service_requests/service_requests.html', service_requests=service_requests, service_history=service_history)
+
 
 @app.route('/service_requests/create/<int:service_id>', methods=['GET', 'POST'])
 def create_service_request(service_id):
+    # Check if the service exists
+    service = Service.query.get_or_404(service_id)
+
     if request.method == 'POST':
+        # Capture data from the form
         service_description = request.form['service_description']
-        user_id = session['user_id']
         price = request.form['price']
-        
-        new_request = ServiceRequest(service_id=service_id, user_id=user_id, service_description=service_description, price=price)
+        user_id = session['user_id']
+
+        # Create a new service request
+        new_request = ServiceRequest(
+            service_id=service_id,
+            user_id=user_id,
+            service_description=service_description,
+            price=price
+        )
         db.session.add(new_request)
         db.session.commit()
+
         flash('Service request created successfully!', 'success')
         return redirect(url_for('view_service_requests'))
 
-    # Render the service request creation form
-    return render_template('service_requests/create_service_request.html', service_id=service_id)
+    # Pass the service object to the template for pre-populating the form
+    return render_template('service_requests/create_service_request.html', service_id=service_id, service=service)
 
 @app.route('/service_requests/update/<int:service_request_id>', methods=['GET', 'POST'])
 def update_service_request(service_request_id):
@@ -589,7 +625,11 @@ def delete_service_request(service_request_id):
     # Render confirmation page for deletion
     return render_template('service_requests/delete_service_request.html', service_request_id=service_request_id)
 
-
+# -- Order Details --
+@app.route('/order_details/<int:service_request_id>')
+def order_details(service_request_id):
+    service_request = ServiceRequest.query.get_or_404(service_request_id)
+    return render_template('service_requests/order_details.html', service_request=service_request)
 
 #-- Run the app --
 if __name__ == '__main__':

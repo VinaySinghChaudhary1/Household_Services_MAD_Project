@@ -16,6 +16,8 @@ Service Requests
                     <th>Supplier Name</th>
                     <th>Status</th>
                     <th>Requested Date</th>
+                    <th>Accepted Date</th>
+                    <th>Completion/Return Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -23,9 +25,25 @@ Service Requests
                 {% for request in service_requests %}
                     <tr>
                         <td>{{ request.service.service_name }}</td>
-                        <td>{{ request.service.user.full_name if request.supplier_id else 'Not Assigned' }}</td>
+                        <td>{{ request.service.supplier.full_name if request.service.supplier else 'Not Assigned' }}</td>
                         <td>{{ request.status }}</td>
                         <td>{{ request.date_requested.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if request.date_issued %}
+                                {{ request.date_issued.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if request.status == 'completed' %}
+                                {{ request.date_completed.strftime('%Y-%m-%d') if request.date_completed else 'N/A' }}
+                            {% elif request.status == 'returned' %}
+                                {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="d-flex flex-column">
                                 {% if session.get('role') == 'supplier' or session.get('role') == 'admin' %}
@@ -41,7 +59,6 @@ Service Requests
                                     </form>
                                 {% endif %}
 
-                                <!-- Delete button, visible only for the customer who created the request or admin -->
                                 {% if session.get('role') == 'admin' or (session.get('role') == 'customer' and session.get('user_id') == request.user_id) %}
                                     <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this service request?');">
                                         <button type="submit" class="btn btn-danger mt-2">Delete</button>
@@ -55,6 +72,41 @@ Service Requests
         </table>
     {% else %}
         <p>No service requests found.</p>
+    {% endif %}
+
+    <!-- Service History Section -->
+    <h2 class="mt-5">Service History</h2>
+    {% if service_history %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Supplier Name</th>
+                    <th>Status</th>
+                    <th>Completion/Return Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_history %}
+                    <tr>
+                        <td>{{ request.service.service_name }}</td>
+                        <td>{{ request.service.supplier.full_name if request.service.supplier else 'Not Assigned' }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>
+                            {% if request.status == 'completed' %}
+                                {{ request.date_completed.strftime('%Y-%m-%d') if request.date_completed else 'N/A' }}
+                            {% elif request.status == 'returned' %}
+                                {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No service history found.</p>
     {% endif %}
 </div>
 {% endblock %}

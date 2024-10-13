@@ -1,0 +1,14 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Profile
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Profile</h1>
+    <p>Welcome, {{ user.username }}!</p>
+    <p>Your email is: {{ user.email }}</p>
+    <p>Your role is: {{ user.role }}</p>
+</div>
+{% endblock %}
