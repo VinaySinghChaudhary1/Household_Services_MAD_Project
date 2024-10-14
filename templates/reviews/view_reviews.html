@@ -1,0 +1,23 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Supplier Reviews{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Reviews for Service Request #{{ reviews[0].service_request_id if reviews else 'No Reviews' }}</h1>
+
+    {% if reviews %}
+        <ul class="list-group">
+            {% for review in reviews %}
+                <li class="list-group-item">
+                    <strong>Rating:</strong> {{ review.rating }} / 5
+                    <p>{{ review.comment }}</p>
+                    <small>Reviewed by {{ review.customer.full_name }} on {{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews available for this service request.</p>
+    {% endif %}
+</div>
+{% endblock %}

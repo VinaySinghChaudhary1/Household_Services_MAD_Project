@@ -103,3 +103,30 @@ class ServiceRequest(db.Model):
         self.date_completed = date_completed
         self.date_returned = date_returned
         self.status = 'pending'
+
+
+class Review(db.Model):
+    __tablename__ = 'reviews'
+    review_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.service_id'), nullable=False)
+    service_request_id = db.Column(db.Integer, db.ForeignKey('service_requests.service_request_id'), nullable=False)  # Link to the specific service request
+    customer_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # Rating from 1 to 5
+    comment = db.Column(db.String(500))  # Optional comment for the review
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    service = db.relationship('Service', backref='reviews')
+    service_request = db.relationship('ServiceRequest', backref='reviews')  # Relationship to service request
+    customer = db.relationship('User', foreign_keys=[customer_id], backref='customer_reviews')
+    supplier = db.relationship('User', foreign_keys=[supplier_id], backref='supplier_reviews')
+
+    def __init__(self, service_id, service_request_id, customer_id, supplier_id, rating, comment=None, created_at=None):
+        self.service_id = service_id
+        self.service_request_id = service_request_id  # Assign the service_request_id
+        self.customer_id = customer_id
+        self.supplier_id = supplier_id
+        self.rating = rating
+        self.comment = comment
+        self.created_at = datetime.utcnow()

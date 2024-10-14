@@ -47,6 +47,10 @@ Admin Dashboard
                                 <button type="submit" class="btn btn-danger mt-2">Delete</button>
                             </form>
                             <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info mt-2">Order Details</a>
+                            <!-- Added View Reviews button -->
+                            {% if request.status in ['completed', 'returned', 'rejected'] %}
+                                <a href="{{ url_for('view_reviews', service_request_id=request.service_request_id) }}" class="btn btn-secondary mt-2">View Reviews</a>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
@@ -66,7 +70,7 @@ Admin Dashboard
                     <th>Supplier Name</th>
                     <th>Status</th>
                     <th>Completion/Return Date</th>
-                    <th>Actions</th> <!-- Added Actions column for Order Details -->
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,10 +84,18 @@ Admin Dashboard
                                 {{ request.date_completed.strftime('%Y-%m-%d') if request.date_completed else 'N/A' }}
                             {% elif request.status == 'returned' %}
                                 {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
+                            {% elif request.status == 'rejected' %}
+                                {{ request.date_rejected.strftime('%Y-%m-%d') if request.date_rejected else 'N/A' }}
+                            {% else %}
+                                N/A
                             {% endif %}
                         </td>
                         <td>
                             <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info">Order Details</a>
+                            <!-- Added View Reviews button -->
+                            {% if request.status in ['completed', 'returned', 'rejected'] %}
+                                <a href="{{ url_for('view_reviews', service_request_id=request.service_request_id) }}" class="btn btn-secondary">View Reviews</a>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename     # for uploading
 from datetime import datetime    # for Datetime
 import os  # for path
 from db import db    # for db
-from model import User, Category, Service, ServiceRequest       # for models
+from model import User, Category, Service, ServiceRequest, Review       # for models
 from functools import wraps  # for login_required
 
 
@@ -256,20 +256,16 @@ def logout():
 def search():
     # Get the search term from the request
     query = request.args.get('query', '').strip()
-
     if not query:
         flash("Please provide a keyword to search.", "info")
         return redirect(url_for('category_dashboard'))
-
     # Perform case-insensitive search in categories and services
     matched_categories = Category.query.filter(
         (Category.category_name.ilike(f'%{query}%')) | (Category.category_description.ilike(f'%{query}%'))
     ).all()
-
     matched_services = Service.query.filter(
         (Service.service_name.ilike(f'%{query}%')) | (Service.service_description.ilike(f'%{query}%'))
     ).all()
-
     # Render a search results template and pass the matches
     return render_template('search_results.html', query=query, categories=matched_categories, services=matched_services)
 
@@ -319,6 +315,7 @@ def admin_dashboard():
     return render_template('dashboard/admin_dashboard.html', 
                            service_requests=service_requests, 
                            history_requests=history_requests)
+
 
 
 # -- Profile - Edit, Delete --
@@ -376,6 +373,7 @@ def delete_profile(user_id):
         return redirect(url_for('login'))
     
     return render_template('profile/delete_profile.html', user=user)
+
 
 
 
@@ -475,6 +473,7 @@ def delete_category(category_id):
         return redirect(url_for('category_dashboard'))
 
     return render_template('category/delete_category.html', category=existing_category)
+
 
 
 
@@ -597,6 +596,7 @@ def confirm_delete_service(service_id):
     return render_template('service/delete_service.html', service=service)
 
 
+
 # -- Service Requests (Dashboard, Create, Edit, Delete) --
 @app.route('/service_requests', methods=['GET'])
 def view_service_requests():
@@ -615,7 +615,6 @@ def view_service_requests():
         service_requests = ServiceRequest.query.filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
         service_history = ServiceRequest.query.filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
     return render_template('service_requests/service_requests.html', service_requests=service_requests, service_history=service_history)
-
 
 @app.route('/service_requests/create/<int:service_id>', methods=['GET', 'POST'])
 def create_service_request(service_id):
@@ -654,7 +653,7 @@ def update_service_request(service_request_id):
     
     if request.method == 'POST':
         status = request.form['status']
-        if status in ['accepted', 'rejected', 'completed', 'returned', 'cancelled']:
+        if status in ['accepted', 'rejected', 'completed', 'returned']:
             service_request.status = status
             if status == 'accepted':
                 service_request.date_issued = datetime.utcnow()
@@ -684,11 +683,67 @@ def delete_service_request(service_request_id):
     # Render confirmation page for deletion
     return render_template('service_requests/delete_service_request.html', service_request_id=service_request_id)
 
+
+
+# -- Reviews (Leave Review) --
+@app.route('/leave_review/<int:service_request_id>', methods=['GET', 'POST'])
+def leave_review(service_request_id):
+    service_request = ServiceRequest.query.get_or_404(service_request_id)
+
+    # Allow review for completed, returned, or rejected services only
+    if session.get('user_id') != service_request.user_id or service_request.status not in ['completed', 'returned', 'rejected']:
+        flash('You are not authorized to leave a review for this service.', 'danger')
+        return redirect(url_for('customer_dashboard'))
+
+    if request.method == 'POST':
+        rating = int(request.form.get('rating'))
+        comment = request.form.get('comment')
+
+        # Create the review and store it in the database
+        new_review = Review(
+            service_id=service_request.service_id,
+            service_request_id=service_request_id,  # Add service_request_id to the review
+            customer_id=service_request.user_id,
+            supplier_id=service_request.service.supplier_id,
+            rating=rating,
+            comment=comment
+        )
+        db.session.add(new_review)
+        db.session.commit()
+
+        flash('Your review has been submitted!', 'success')
+        return redirect(url_for('customer_dashboard'))
+
+    return render_template('reviews/leave_review.html', service_request=service_request)
+
+@app.route('/reviews/<int:service_request_id>', methods=['GET'])
+def view_reviews(service_request_id):
+    # Fetch all reviews for the given service request
+    reviews = Review.query.filter_by(service_request_id=service_request_id).all()
+
+    if not reviews:
+        # Redirect based on user role
+        if session.get('role') == 'admin':
+            flash("No reviews found for this service request.", "info")
+            return redirect(url_for('admin_dashboard'))
+        elif session.get('role') == 'supplier':
+            flash("No reviews found for this service request.", "info")
+            return redirect(url_for('supplier_dashboard'))
+
+    return render_template('reviews/view_reviews.html', reviews=reviews)
+
+
+
+
+
+
 # -- Order Details --
 @app.route('/order_details/<int:service_request_id>')
 def order_details(service_request_id):
     service_request = ServiceRequest.query.get_or_404(service_request_id)
     return render_template('service_requests/order_details.html', service_request=service_request)
+
+
 
 #-- Run the app --
 if __name__ == '__main__':
