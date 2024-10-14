@@ -734,9 +734,6 @@ def view_reviews(service_request_id):
 
 
 
-
-
-
 # -- Order Details --
 @app.route('/order_details/<int:service_request_id>')
 def order_details(service_request_id):

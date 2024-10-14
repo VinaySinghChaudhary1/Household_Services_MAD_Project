@@ -75,7 +75,7 @@ Customer Dashboard
                             <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info">Order Details</a>
                             <!-- Leave a Review button, visible for completed, returned, and rejected services -->
                             {% if request.status in ['completed', 'returned', 'rejected'] %}
-                                <a href="{{ url_for('leave_review', service_request_id=request.service_request_id) }}" class="btn btn-success mt-2">Leave a Review</a>
+                                <a href="{{ url_for('leave_review', service_request_id=request.service_request_id) }}" class="btn btn-success mt-0">Add Review</a>
                             {% endif %}
                         </td>
                     </tr>

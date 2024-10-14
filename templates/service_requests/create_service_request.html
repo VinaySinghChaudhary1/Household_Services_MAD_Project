@@ -23,7 +23,8 @@ Create Service Request
         </div>
         
         <button type="submit" class="btn btn-primary">Submit Request</button>
-        <a href="{{ url_for('view_service_requests') }}" class="btn btn-secondary">Cancel</a>
+        <!-- Redirect to service request details using service ID on cancel -->
+        <a href="{{ url_for('service_dashboard', category_id=service.category_id) }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 {% endblock %}
