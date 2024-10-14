@@ -360,7 +360,6 @@ def edit_profile(user_id):
     
     return render_template('profile/edit_profile.html', user=user)
 
-
 @app.route('/delete_profile/<int:user_id>/', methods=['GET', 'POST'])
 def delete_profile(user_id):
     user = User.query.get_or_404(user_id)
@@ -601,14 +600,18 @@ def confirm_delete_service(service_id):
 # -- Service Requests (Dashboard, Create, Edit, Delete) --
 @app.route('/service_requests', methods=['GET'])
 def view_service_requests():
-    if session.get('role') == 'customer':
-        service_requests = ServiceRequest.query.filter_by(user_id=session['user_id']).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
-        service_history = ServiceRequest.query.filter_by(user_id=session['user_id']).filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
-    elif session.get('role') == 'supplier':
-        service_requests = ServiceRequest.query.filter_by(supplier_id=session['user_id']).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
-        service_history = ServiceRequest.query.filter_by(supplier_id=session['user_id']).filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
+    user_id = session.get('user_id')
+    role = session.get('role')
+    if role == 'customer':
+        # Fetch ongoing service requests and service history for the customer
+        service_requests = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+        service_history = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
+    elif role == 'supplier':
+        # Fetch ongoing service requests and service history for the supplier
+        service_requests = ServiceRequest.query.join(Service).filter(Service.supplier_id == user_id).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+        service_history = ServiceRequest.query.join(Service).filter(Service.supplier_id == user_id).filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
     else:
-        # Admin view
+        # Admin view: Fetch all ongoing service requests and service history
         service_requests = ServiceRequest.query.filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
         service_history = ServiceRequest.query.filter(ServiceRequest.status.in_(['completed', 'returned'])).all()
     return render_template('service_requests/service_requests.html', service_requests=service_requests, service_history=service_history)
