@@ -328,29 +328,38 @@ def profile():
     user = User.query.get_or_404(user_id)
     return render_template('profile/profile.html', user=user)
 
-# @app.route('/change_password', methods=['GET', 'POST'])
-
 @app.route('/edit_profile/<int:user_id>/', methods=['GET', 'POST'])
 def edit_profile(user_id):
     user = User.query.get_or_404(user_id)
-    
-    # Only allow editing if the logged-in user matches the user_id in the URL
-    if user_id != session.get('user_id'):
-        flash("You do not have permission to edit this profile.", "danger")
-        return redirect(url_for('profile'))
-
     if request.method == 'POST':
         user.full_name = request.form.get('full_name')
-        user.username = request.form.get('username')
         user.email = request.form.get('email')
         user.address = request.form.get('address')
         user.pincode = request.form.get('pincode')
-        
+
+        # Optional password update
+        new_password = request.form.get('password')
+        if new_password:
+            user.password = generate_password_hash(new_password)
+
+        # Only for suppliers: Update service-related fields
+        if user.role == 'supplier':
+            user.service_name = request.form.get('service_name')
+            user.experience_years = request.form.get('experience_years')
+
+            # Handle document upload
+            document = request.files.get('document')
+            if document:
+                filename = secure_filename(document.filename)
+                document.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                user.document = filename
+
         db.session.commit()
         flash("Profile updated successfully!", "success")
         return redirect(url_for('profile'))
     
     return render_template('profile/edit_profile.html', user=user)
+
 
 @app.route('/delete_profile/<int:user_id>/', methods=['GET', 'POST'])
 def delete_profile(user_id):

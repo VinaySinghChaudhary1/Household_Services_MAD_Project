@@ -14,30 +14,76 @@ Edit Profile
                 </div>
                 <div class="card-body">
                     <form action="{{ url_for('edit_profile', user_id=user.user_id) }}" method="POST" enctype="multipart/form-data">
+                        
+                        <!-- Full Name Field -->
                         <div class="mb-3">
-                            <label for="full_name" class="form-label">Full Name</label>
+                            <label for="full_name" class="form-label"><strong>Full Name</strong></label>
                             <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.full_name }}" required>
                         </div>
+
+                        <!-- Email Field -->
                         <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label"><strong>Email</strong></label>
                             <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
                         </div>
+
+                        <!-- Address Field -->
                         <div class="mb-3">
-                            <label for="phone_number" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
+                            <label for="address" class="form-label"><strong>Address</strong></label>
                             <textarea class="form-control" id="address" name="address" rows="3" required>{{ user.address }}</textarea>
                         </div>
-                        <div class="mb-3 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Update Profile</button>
+
+                        <!-- Pincode Field -->
+                        <div class="mb-3">
+                            <label for="pincode" class="form-label"><strong>Pincode</strong></label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" value="{{ user.pincode }}" required>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label"><strong>New Password</strong> (Leave blank if you do not want to change)</label>
+                            <input type="password" class="form-control" id="password" name="password">
+                        </div>
+
+                        {% if user.role == 'supplier' %}
+                            <!-- Service Name Field (For Supplier) -->
+                            <div class="mb-3">
+                                <label for="service_name" class="form-label"><strong>Service Name</strong></label>
+                                <input type="text" class="form-control" id="service_name" name="service_name" value="{{ user.service_name }}">
+                            </div>
+
+                            <!-- Years of Experience Field (For Supplier) -->
+                            <div class="mb-3">
+                                <label for="experience_years" class="form-label"><strong>Years of Experience</strong></label>
+                                <input type="number" class="form-control" id="experience_years" name="experience_years" value="{{ user.experience_years }}" min="0">
+                            </div>
+
+                            <!-- Document Field (For Supplier) -->
+                            <div class="mb-3">
+                                <label for="document" class="form-label"><strong>Document</strong></label>
+                                <input type="file" class="form-control" id="document" name="document">
+                                {% if user.document %}
+                                    <small class="text-muted">Current Document: <a href="{{ url_for('static', filename='uploads/' + user.document) }}" target="_blank">{{ user.document }}</a></small>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
                             <a href="{{ url_for('profile') }}" class="btn btn-secondary">Cancel</a>
                         </div>
+
+                            <!-- Go Back Button -->
+                            <div class="mt-4">
+                                {% if session.get('role') == 'supplier' %}
+                                    <a href="{{ url_for('profile') }}" class="btn btn-secondary">Go Back to Supplier Profile</a>
+                                {% elif session.get('role') == 'customer' %}
+                                    <a href="{{ url_for('profile') }}" class="btn btn-secondary">Go Back to Customer Profile</a>
+                                {% elif session.get('role') == 'admin' %}
+                                    <a href="{{ url_for('profile') }}" class="btn btn-secondary">Go Back to Admin Profile</a>
+                                {% endif %}
+                            </div>
                     </form>
                 </div>
             </div>

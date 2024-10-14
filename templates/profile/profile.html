@@ -13,22 +13,92 @@ Profile
                     <h2>Your Profile</h2>
                 </div>
                 <div class="card-body">
-                    <p><strong>Full Name:</strong> {{ user.full_name }}</p>
-                    <p><strong>Username:</strong> {{ user.username }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Address:</strong> {{ user.address }}</p>
-                    <p><strong>Pincode:</strong> {{ user.pincode }}</p>
-                    <p><strong>Role:</strong> {{ user.role }}</p>
+                    <div class="row mb-3">
+                        <label class="col-md-4"><strong>Full Name:</strong></label>
+                        <div class="col-md-8">
+                            <p>{{ user.full_name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-md-4"><strong>Username:</strong></label>
+                        <div class="col-md-8">
+                            <p>{{ user.username }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-md-4"><strong>Email:</strong></label>
+                        <div class="col-md-8">
+                            <p>{{ user.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-md-4"><strong>Address:</strong></label>
+                        <div class="col-md-8">
+                            <p>{{ user.address }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-md-4"><strong>Pincode:</strong></label>
+                        <div class="col-md-8">
+                            <p>{{ user.pincode }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-md-4"><strong>Role:</strong></label>
+                        <div class="col-md-8">
+                            <p>{{ user.role }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-md-4"><strong>Password:</strong></label>
+                        <div class="col-md-8">
+                            <p>********</p>
+                        </div>
+                     </div>
 
                     {% if user.role == 'supplier' %}
-                        <p><strong>Service Name:</strong> {{ user.service_name }}</p>
-                        <p><strong>Years of Experience:</strong> {{ user.experience_years }} years</p>
-                        <p><strong>Document:</strong> <a href="{{ url_for('static', filename='uploads/' + user.document) }}" target="_blank">{{ user.document }}</a></p>
+                        <div class="row mb-3">
+                            <label class="col-md-4"><strong>Service Name:</strong></label>
+                            <div class="col-md-8">
+                                <p>{{ user.service_name }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-md-4"><strong>Years of Experience:</strong></label>
+                            <div class="col-md-8">
+                                <p>{{ user.experience_years }} years</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-md-4"><strong>Document:</strong></label>
+                            <div class="col-md-8">
+                                <a href="{{ url_for('static', filename='uploads/' + user.document) }}" target="_blank">{{ user.document }}</a>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
                 <div class="card-footer text-center">
                     <a href="{{ url_for('edit_profile', user_id=user.user_id) }}" class="btn btn-warning me-2">Edit Profile</a>
                     <a href="{{ url_for('delete_profile', user_id=user.user_id) }}" class="btn btn-danger">Delete Profile</a>
+
+                        <!-- Go Back Button -->
+                        <div class="mt-4">
+                            {% if session.get('role') == 'supplier' %}
+                                <a href="{{ url_for('supplier_dashboard') }}" class="btn btn-secondary">Go Back to Supplier Dashboard</a>
+                            {% elif session.get('role') == 'customer' %}
+                                <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Go Back to Customer Dashboard</a>
+                            {% elif session.get('role') == 'admin' %}
+                                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Go Back to Admin Dashboard</a>
+                            {% endif %}
+                        </div>
                 </div>
             </div>
         </div>

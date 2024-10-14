@@ -18,6 +18,16 @@ Delete Profile
                         <button type="submit" class="btn btn-danger">Yes, Delete</button>
                         <a href="{{ url_for('profile') }}" class="btn btn-secondary">Cancel</a>
                     </form>
+                        <!-- Go Back Button -->
+                    <div class="mt-4">
+                        {% if session.get('role') == 'supplier' %}
+                            <a href="{{ url_for('profile') }}" class="btn btn-secondary">Go Back to Supplier profile</a>
+                        {% elif session.get('role') == 'customer' %}
+                            <a href="{{ url_for('profile') }}" class="btn btn-secondary">Go Back to Customer profile</a>
+                        {% elif session.get('role') == 'admin' %}
+                            <a href="{{ url_for('profile') }}" class="btn btn-secondary">Go Back to Admin profile</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
