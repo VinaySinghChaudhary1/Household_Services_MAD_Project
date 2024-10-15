@@ -361,15 +361,27 @@ def admin_dashboard():
 
 
 # -- Profile - Edit, Delete --
-@app.route('/profile', methods=['GET'])
-def profile():
-    user_id = session.get('user_id')
+@app.route('/profile/<int:user_id>', methods=['GET'])
+def profile(user_id):
+    # Fetch the user by user_id
     user = User.query.get_or_404(user_id)
+    # Admin can view any profile; non-admins can only view their own profile
+    if session.get('role') != 'admin' and session.get('user_id') != user_id:
+        flash("You do not have permission to view this profile.", "danger")
+        return redirect(url_for('profile', user_id=session.get('user_id')))
+    # Render the profile template with the user details
     return render_template('profile/profile.html', user=user)
+
 
 @app.route('/edit_profile/<int:user_id>/', methods=['GET', 'POST'])
 def edit_profile(user_id):
     user = User.query.get_or_404(user_id)
+    
+    # Check if the logged-in user is allowed to edit this profile
+    if session.get('role') != 'admin' and session.get('user_id') != user_id:
+        flash("You do not have permission to edit this profile.", "danger")
+        return redirect(url_for('profile', user_id=session.get('user_id')))
+    
     if request.method == 'POST':
         user.full_name = request.form.get('full_name')
         user.email = request.form.get('email')
@@ -395,30 +407,38 @@ def edit_profile(user_id):
 
         db.session.commit()
         flash("Profile updated successfully!", "success")
-        return redirect(url_for('profile'))
+        # Redirect to the profile page with user_id
+        return redirect(url_for('profile', user_id=user_id))
     
     return render_template('profile/edit_profile.html', user=user)
+
 
 @app.route('/delete_profile/<int:user_id>/', methods=['GET', 'POST'])
 def delete_profile(user_id):
     user = User.query.get_or_404(user_id)
     
-    # Only allow deleting if the logged-in user matches the user_id in the URL
-    if user_id != session.get('user_id'):
+    # Check if the logged-in user is allowed to delete this profile
+    if session.get('role') != 'admin' and session.get('user_id') != user_id:
         flash("You do not have permission to delete this profile.", "danger")
-        return redirect(url_for('profile'))
+        return redirect(url_for('profile', user_id=session.get('user_id')))
     
     if request.method == 'POST':
         db.session.delete(user)
         db.session.commit()
         flash("Profile deleted successfully!", "success")
-        return redirect(url_for('login'))
+        # If the admin deletes a profile, redirect back to the member list; otherwise, redirect to login
+        if session.get('role') == 'admin':
+            return redirect(url_for('member_list'))
+        else:
+            return redirect(url_for('login'))
     
     return render_template('profile/delete_profile.html', user=user)
 
 
+
 # -- Admin - approval, block, unblock --
 @app.route('/admin/members')
+@login_required(role="admin")
 def member_list():
     customers = User.query.filter_by(role='customer').all()
     suppliers = User.query.filter_by(role='supplier').all()
@@ -426,6 +446,7 @@ def member_list():
     return render_template('admin/member_list.html', customers=customers, suppliers=suppliers, waiting_approval=waiting_approval)
 
 @app.route('/admin/verify_supplier/<int:user_id>', methods=['POST'])
+@login_required(role="admin")
 def verify_supplier(user_id):
     supplier = User.query.get_or_404(user_id)
     if supplier.role == 'supplier' and not supplier.is_verified:
@@ -435,6 +456,7 @@ def verify_supplier(user_id):
     return redirect(url_for('member_list'))
 
 @app.route('/admin/block_user/<int:user_id>', methods=['POST', 'GET'])
+@login_required(role="admin")
 def block_user(user_id):
     user = User.query.get_or_404(user_id)
     # Toggle the blocked status
@@ -452,6 +474,7 @@ def block_user(user_id):
         return redirect(url_for('member_list'))
 
 @app.route('/admin/unblock_user/<int:user_id>', methods=['POST', 'GET'])
+@login_required(role="admin")
 def unblock_user(user_id):
     user = User.query.get_or_404(user_id)
     # Set the blocked status to False (unblock the user)
@@ -583,7 +606,6 @@ def service_dashboard(category_id):
     return render_template('service/service_dashboard.html', services=services, category=category)
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
-# @login_required(role="admin, supplier")
 def create_service(category_id):
     # Check if the category exists, if not, redirect to home
     category = Category.query.get(category_id)
@@ -711,6 +733,11 @@ def view_service_requests():
 
 @app.route('/service_requests/create/<int:service_id>', methods=['GET', 'POST'])
 def create_service_request(service_id):
+    # Check if the user is logged in
+    if 'user_id' not in session:
+        flash('Please log in to create a service request.', 'warning')
+        return redirect(url_for('login'))
+
     # Check if the service exists
     service = Service.query.get_or_404(service_id)
 
@@ -739,6 +766,7 @@ def create_service_request(service_id):
 
     # Pass the service object to the template for pre-populating the form
     return render_template('service_requests/create_service_request.html', service_id=service_id, service=service)
+
 
 @app.route('/service_requests/update/<int:service_request_id>', methods=['GET', 'POST'])
 def update_service_request(service_request_id):

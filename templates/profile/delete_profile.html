@@ -16,7 +16,8 @@ Delete Profile
                     <p>Are you sure you want to delete your profile/account? This action cannot be undone.</p>
                     <form action="{{ url_for('delete_profile', user_id=user.user_id) }}" method="POST">
                         <button type="submit" class="btn btn-danger">Yes, Delete</button>
-                        <a href="{{ url_for('profile') }}" class="btn btn-secondary">Cancel</a>
+                        <!-- Add user_id parameter to the Cancel button URL -->
+                        <a href="{{ url_for('profile', user_id=user.user_id) }}" class="btn btn-secondary">Cancel</a>
                     </form>
                 </div>
             </div>

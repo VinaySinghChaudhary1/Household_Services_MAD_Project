@@ -43,9 +43,13 @@ Admin Dashboard
                                 </select>
                                 <button type="submit" class="btn btn-primary mt-2">Update</button>
                             </form>
-                            <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" style="display:inline;">
+                            
+                            <!-- Added Delete button for service request by admin -->
+
+                            <!-- <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-danger mt-2">Delete</button>
-                            </form>
+                            </form> -->
+                            
                             <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info mt-2">Order Details</a>
                             <!-- Added View Reviews button -->
                             {% if request.status in ['completed', 'returned', 'rejected'] %}

@@ -9,6 +9,31 @@ Search Results
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Search Results for "{{ query }}"</h1>
     </div>
+    <!-- Check if categories exists -->
+        {% if categories %}
+        <h3 class="mt-5">Matched Categories</h3>
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        {% if category.picture %}
+                            <img src="{{ url_for('static', filename='uploads/' + category.picture) }}" class="card-img-top" alt="Category Image" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-category.jpg') }}" class="card-img-top" alt="Default Category Image" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category.category_name }}</h5>
+                            <p class="card-text">{{ category.category_description }}</p>
+                            <a href="{{ url_for('service_dashboard', category_id=category.category_id) }}" class="btn btn-primary">View Services</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center mt-4">No categories found matching your search.</p>
+    {% endif %}
+
 
     <!-- Check if services exist -->
     {% if services %}

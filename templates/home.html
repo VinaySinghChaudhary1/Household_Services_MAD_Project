@@ -117,26 +117,27 @@
 
                     <!-- Account Dropdown or Login Button -->
                     {% if session.get('username') %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Account
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="accountDropdown">
-                                <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
-                                <li><a class="dropdown-item" href="{% if session.get('role') == 'supplier' %}{{ url_for('supplier_dashboard') }}{% elif session.get('role') == 'customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'admin' %}{{ url_for('admin_dashboard') }}{% endif %}">Dashboard</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('view_service_requests') }}">Service Requests</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <form action="{{ url_for('logout') }}" method="POST" class="d-inline">
-                                <button type="submit" class="btn btn-outline-danger">Logout</button>
-                            </form>
-                        </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Account
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="accountDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('profile', user_id=session.get('user_id')) }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% if session.get('role') == 'supplier' %}{{ url_for('supplier_dashboard') }}{% elif session.get('role') == 'customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'admin' %}{{ url_for('admin_dashboard') }}{% endif %}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('view_service_requests') }}">Service Requests</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{{ url_for('logout') }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger">Logout</button>
+                        </form>
+                    </li>
                     {% else %}
-                        <!-- <li class="nav-item">
-                            <a class="btn btn-outline-primary" href="/login">Login</a>
-                        </li> -->
+                    <!-- <li class="nav-item">
+                        <a class="btn btn-outline-primary" href="/login">Login</a>
+                    </li> -->
                     {% endif %}
+
                 </ul>
             </div>
         </div>

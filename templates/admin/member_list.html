@@ -18,6 +18,7 @@ Admin Member List
                 <th>Address</th>
                 <th>Pincode</th>
                 <th>Actions</th>
+                <th>View Profile</th> <!-- Added View Profile column -->
             </tr>
         </thead>
         <tbody>
@@ -28,9 +29,12 @@ Admin Member List
                 <td>{{ customer.address }}</td>
                 <td>{{ customer.pincode }}</td>
                 <td>
-                    <form action="{{ url_for('block_user', user_id=customer.user_id) }}" method="POST">
+                    <form action="{{ url_for('block_user', user_id=customer.user_id) }}" method="POST" style="margin-right: 5px;">
                         <button type="submit" class="btn btn-danger">{{ 'Unblock' if customer.is_blocked else 'Block' }}</button>
                     </form>
+                </td>
+                <td>
+                    <a href="{{ url_for('profile', user_id=customer.user_id) }}" class="btn btn-info">View Profile</a> <!-- View Profile Button -->
                 </td>
             </tr>
             {% endfor %}
@@ -48,6 +52,7 @@ Admin Member List
                 <th>Service</th>
                 <th>Experience</th>
                 <th>Actions</th>
+                <th>View Profile</th> <!-- Added View Profile column -->
             </tr>
         </thead>
         <tbody>
@@ -58,9 +63,12 @@ Admin Member List
                 <td>{{ supplier.service_name }}</td>
                 <td>{{ supplier.experience_years }}</td>
                 <td>
-                    <form action="{{ url_for('block_user', user_id=supplier.user_id) }}" method="POST">
+                    <form action="{{ url_for('block_user', user_id=supplier.user_id) }}" method="POST" style="margin-right: 5px;">
                         <button type="submit" class="btn btn-danger">{{ 'Unblock' if supplier.is_blocked else 'Block' }}</button>
                     </form>
+                </td>
+                <td>
+                    <a href="{{ url_for('profile', user_id=supplier.user_id) }}" class="btn btn-info">View Profile</a> <!-- View Profile Button -->
                 </td>
             </tr>
             {% endfor %}
@@ -79,6 +87,7 @@ Admin Member List
                 <th>Experience</th>
                 <th>Document</th>
                 <th>Actions</th>
+                <th>View Profile</th> <!-- Added View Profile column -->
             </tr>
         </thead>
         <tbody>
@@ -90,12 +99,15 @@ Admin Member List
                 <td>{{ supplier.experience_years }}</td>
                 <td><a href="{{ url_for('static', filename='uploads/' + supplier.document) }}" target="_blank">View Document</a></td>
                 <td>
-                    <form action="{{ url_for('verify_supplier', user_id=supplier.user_id) }}" method="POST">
+                    <form action="{{ url_for('verify_supplier', user_id=supplier.user_id) }}" method="POST" style="margin-right: 5px;">
                         <button type="submit" class="btn btn-success">Verify</button>
                     </form>
-                    <form action="{{ url_for('block_user', user_id=supplier.user_id) }}" method="POST">
+                    <form action="{{ url_for('block_user', user_id=supplier.user_id) }}" method="POST" style="margin-right: 5px;">
                         <button type="submit" class="btn btn-danger">{{ 'Unblock' if supplier.is_blocked else 'Block' }}</button>
                     </form>
+                </td>
+                <td>
+                    <a href="{{ url_for('profile', user_id=supplier.user_id) }}" class="btn btn-info">View Profile</a> <!-- View Profile Button -->
                 </td>
             </tr>
             {% endfor %}
