@@ -17,6 +17,8 @@ class User(db.Model):
     service_name = db.Column(db.String)  # Only applicable if the user is a supplier
     experience_years = db.Column(db.Integer)  # Only applicable if the user is a supplier
     document = db.Column(db.String)  # Path or name of the uploaded document, only for suppliers
+    is_verified = db.Column(db.Boolean, default=False)  # For supplier verification
+    is_blocked = db.Column(db.Boolean, default=False)  # For blocking/unblocking users
 
     def __init__(self, full_name, username, email, password, address, pincode, role, service_name=None, experience_years=None, document=None):
         self.full_name = full_name
@@ -29,6 +31,9 @@ class User(db.Model):
         self.service_name = service_name
         self.experience_years = experience_years
         self.document = document
+        self.is_verified = False  # New suppliers are not verified by default
+        self.is_blocked = False  # New users are not blocked by default
+
 
 class Category(db.Model):
     __tablename__ = "category"

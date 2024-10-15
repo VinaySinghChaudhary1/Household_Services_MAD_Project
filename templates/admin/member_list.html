@@ -1,0 +1,105 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Admin Member List
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Member List</h1>
+    
+    <!-- Customers List -->
+    <h4>Customers</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Pincode</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.full_name }}</td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.address }}</td>
+                <td>{{ customer.pincode }}</td>
+                <td>
+                    <form action="{{ url_for('block_user', user_id=customer.user_id) }}" method="POST">
+                        <button type="submit" class="btn btn-danger">{{ 'Unblock' if customer.is_blocked else 'Block' }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+
+    <!-- Suppliers List -->
+    <h4>Suppliers</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Service</th>
+                <th>Experience</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supplier in suppliers %}
+            <tr>
+                <td>{{ supplier.full_name }}</td>
+                <td>{{ supplier.email }}</td>
+                <td>{{ supplier.service_name }}</td>
+                <td>{{ supplier.experience_years }}</td>
+                <td>
+                    <form action="{{ url_for('block_user', user_id=supplier.user_id) }}" method="POST">
+                        <button type="submit" class="btn btn-danger">{{ 'Unblock' if supplier.is_blocked else 'Block' }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+
+    <!-- Waiting Approval List -->
+    <h4>Waiting for Approval</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Service</th>
+                <th>Experience</th>
+                <th>Document</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supplier in waiting_approval %}
+            <tr>
+                <td>{{ supplier.full_name }}</td>
+                <td>{{ supplier.email }}</td>
+                <td>{{ supplier.service_name }}</td>
+                <td>{{ supplier.experience_years }}</td>
+                <td><a href="{{ url_for('static', filename='uploads/' + supplier.document) }}" target="_blank">View Document</a></td>
+                <td>
+                    <form action="{{ url_for('verify_supplier', user_id=supplier.user_id) }}" method="POST">
+                        <button type="submit" class="btn btn-success">Verify</button>
+                    </form>
+                    <form action="{{ url_for('block_user', user_id=supplier.user_id) }}" method="POST">
+                        <button type="submit" class="btn btn-danger">{{ 'Unblock' if supplier.is_blocked else 'Block' }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

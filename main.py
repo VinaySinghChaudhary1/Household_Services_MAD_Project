@@ -107,7 +107,17 @@ def login():
             flash("Role does not match with the user. Please check and try again.", "warning")
             return redirect(url_for('login'))
 
-        # If all credentials are correct, save user information in the session
+        # Check if the user is blocked
+        if user_record.is_blocked:
+            flash("Your account has been blocked by the admin. Please contact support for more information.", "danger")
+            return redirect(url_for('login'))
+
+        # If the user is a supplier, check if they are verified
+        if user_record.role == "supplier" and not user_record.is_verified:
+            flash("Your account is awaiting approval from the admin. You cannot log in until verified.", "warning")
+            return redirect(url_for('login'))
+
+        # If all credentials are correct and user is not blocked/verified (if supplier), save user info in the session
         session['user_id'] = user_record.user_id
         session['username'] = user_record.username
         session['role'] = user_record.role
@@ -259,15 +269,47 @@ def search():
     if not query:
         flash("Please provide a keyword to search.", "info")
         return redirect(url_for('category_dashboard'))
-    # Perform case-insensitive search in categories and services
+
+    # Perform case-insensitive search in categories, services, and user details (name, address, pincode)
     matched_categories = Category.query.filter(
-        (Category.category_name.ilike(f'%{query}%')) | (Category.category_description.ilike(f'%{query}%'))
+        (Category.category_name.ilike(f'%{query}%')) |   # Searching by category name
+        (Category.category_description.ilike(f'%{query}%'))  # Searching by category description
     ).all()
-    matched_services = Service.query.filter(
-        (Service.service_name.ilike(f'%{query}%')) | (Service.service_description.ilike(f'%{query}%'))
+
+    matched_services = Service.query.join(User).filter(
+        (Service.service_name.ilike(f'%{query}%')) |   # Searching by service name
+        (Service.service_description.ilike(f'%{query}%')) |    # Searching by service description
+        (User.full_name.ilike(f'%{query}%')) |  # Searching by supplier's name
+        (User.address.ilike(f'%{query}%')) |  # Searching by address
+        (User.pincode.ilike(f'%{query}%'))  # Searching by pincode
     ).all()
-    # Render a search results template and pass the matches
-    return render_template('search_results.html', query=query, categories=matched_categories, services=matched_services)
+
+    # Perform search for users by full name, username, and role
+    matched_users = User.query.filter(
+        (User.full_name.ilike(f'%{query}%')) |  # Searching by full name
+        (User.username.ilike(f'%{query}%'))  # Searching by username
+    ).all()
+
+    # Search users by their name or username for admin purposes
+    if session.get('role') == 'admin':
+        matched_users = User.query.filter(
+            (User.full_name.ilike(f'%{query}%')) | 
+            (User.username.ilike(f'%{query}%'))
+        ).all()
+    else:
+        matched_users = []  # Non-admins cannot see user search results
+
+    # Render the search results template and pass the matches
+    return render_template(
+        'search_results.html',
+        query=query,
+        categories=matched_categories,
+        services=matched_services,
+        users=matched_users  # Pass user matches for admin
+    )
+
+    # Render the search results template and pass the matches
+    return render_template('search_results.html', query=query, categories=matched_categories, services=matched_services, users=matched_users)
 
 
 
@@ -373,6 +415,57 @@ def delete_profile(user_id):
         return redirect(url_for('login'))
     
     return render_template('profile/delete_profile.html', user=user)
+
+
+# -- Admin - approval, block, unblock --
+@app.route('/admin/members')
+def member_list():
+    customers = User.query.filter_by(role='customer').all()
+    suppliers = User.query.filter_by(role='supplier').all()
+    waiting_approval = User.query.filter_by(role='supplier', is_verified=False).all()
+    return render_template('admin/member_list.html', customers=customers, suppliers=suppliers, waiting_approval=waiting_approval)
+
+@app.route('/admin/verify_supplier/<int:user_id>', methods=['POST'])
+def verify_supplier(user_id):
+    supplier = User.query.get_or_404(user_id)
+    if supplier.role == 'supplier' and not supplier.is_verified:
+        supplier.is_verified = True
+        db.session.commit()
+        flash(f'Supplier {supplier.full_name} has been verified.', 'success')
+    return redirect(url_for('member_list'))
+
+@app.route('/admin/block_user/<int:user_id>', methods=['POST', 'GET'])
+def block_user(user_id):
+    user = User.query.get_or_404(user_id)
+    # Toggle the blocked status
+    user.is_blocked = not user.is_blocked
+    db.session.commit()
+    # Determine if user is blocked or unblocked
+    status = "blocked" if user.is_blocked else "unblocked"
+    flash(f'User {user.full_name} has been {status}.', 'success')
+    # Redirect back to the appropriate view depending on where the request came from
+    # If the user was searched from the search, redirect back to the search results
+    # Otherwise, redirect to the member list
+    if 'search' in request.referrer:
+        return redirect(request.referrer)
+    else:
+        return redirect(url_for('member_list'))
+
+@app.route('/admin/unblock_user/<int:user_id>', methods=['POST', 'GET'])
+def unblock_user(user_id):
+    user = User.query.get_or_404(user_id)
+    # Set the blocked status to False (unblock the user)
+    if user.is_blocked:
+        user.is_blocked = False
+        db.session.commit()
+        flash(f'User {user.full_name} has been unblocked.', 'success')
+    else:
+        flash(f'User {user.full_name} is already unblocked.', 'info')
+    # Redirect back to the appropriate view depending on where the request came from
+    if 'search' in request.referrer:
+        return redirect(request.referrer)  # Redirect back to search results if action initiated from there
+    else:
+        return redirect(url_for('member_list'))  # Otherwise, redirect back to member list
 
 
 

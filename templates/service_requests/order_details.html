@@ -10,6 +10,10 @@ Order Details
     <table class="table">
         <tbody>
             <tr>
+                <th>Order ID:</th>
+                <td>{{ service_request.service_request_id }}</td>
+            </tr>
+            <tr>
                 <th>Service Name:</th>
                 <td>{{ service_request.service.service_name }}</td>
             </tr>
@@ -74,5 +78,6 @@ Order Details
             <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Go Back to Admin Dashboard</a>
         {% endif %}
     </div>
+    <br>
 </div>
 {% endblock %}

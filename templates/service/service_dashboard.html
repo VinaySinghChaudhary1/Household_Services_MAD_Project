@@ -23,7 +23,7 @@ Service Dashboard
                             <img src="{{ url_for('static', filename='images/default-service.jpg') }}" class="card-img-top" alt="Default Service Image" style="height: 200px; object-fit: cover;">
                         {% endif %}
                         <div class="card-body">
-                            <h5 class="card-title"><strong>Supplier Name: {{ service.supplier.full_name }}</strong></h5> <!-- Supplier Name as title -->
+                            <p class="card-title"><strong>Supplier Name: {{ service.supplier.full_name }}</strong></p> <!-- Supplier Name as title -->
                             <p class="card-text"><strong>Service Name:</strong> {{ service.service_name }}</p> <!-- Service Name as text -->
                             <p class="card-text"><strong>Service Description:</strong> {{ service.service_description }}</p> <!-- Service Description as text -->
                             
@@ -31,6 +31,12 @@ Service Dashboard
                             <div class="d-flex justify-content-between">
                                 <p class="card-text"><strong>Price:</strong> ₹{{ service.price }}</p> <!-- Price -->
                                 <p class="card-text"><strong>Years of Experience:</strong> {{ service.supplier.experience_years }} years</p> <!-- Years of Experience -->
+                            </div>
+
+                            <!-- Location and Pincode in the same row -->
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text"><strong>Location:</strong> {{ service.supplier.address }}</p> <!-- Location -->
+                                <p class="card-text"><strong>Pincode:</strong> {{ service.supplier.pincode }}</p> <!-- pincode -->
                             </div>
                             
                             <div class="d-flex justify-content-between align-items-center">

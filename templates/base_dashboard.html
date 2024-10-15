@@ -114,6 +114,11 @@
                                 <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
                                 <li><a class="dropdown-item" href="{% if session.get('role') == 'supplier' %}{{ url_for('supplier_dashboard') }}{% elif session.get('role') == 'customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'admin' %}{{ url_for('admin_dashboard') }}{% endif %}">Dashboard</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('view_service_requests') }}">Service Requests</a></li>
+
+                                <!-- Member List for Admin -->
+                                {% if session.get('role') == 'admin' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('member_list') }}">Member List</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                         <li class="nav-item">
