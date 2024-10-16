@@ -18,7 +18,8 @@ Admin Member List
                 <th>Address</th>
                 <th>Pincode</th>
                 <th>Actions</th>
-                <th>View Profile</th> <!-- Added View Profile column -->
+                <th>View Profile</th> <!-- View Profile column -->
+                <th>View Summary</th> <!-- View Summary column -->
             </tr>
         </thead>
         <tbody>
@@ -34,7 +35,10 @@ Admin Member List
                     </form>
                 </td>
                 <td>
-                    <a href="{{ url_for('profile', user_id=customer.user_id) }}" class="btn btn-info">View Profile</a> <!-- View Profile Button -->
+                    <a href="{{ url_for('profile', user_id=customer.user_id) }}" class="btn btn-info">View Profile</a>
+                </td>
+                <td>
+                    <a href="{{ url_for('customer_summary', user_id=customer.user_id) }}" class="btn btn-warning">View Summary</a> <!-- View Summary Button -->
                 </td>
             </tr>
             {% endfor %}
@@ -52,7 +56,8 @@ Admin Member List
                 <th>Service</th>
                 <th>Experience</th>
                 <th>Actions</th>
-                <th>View Profile</th> <!-- Added View Profile column -->
+                <th>View Profile</th> <!-- View Profile column -->
+                <th>View Summary</th> <!-- View Summary column -->
             </tr>
         </thead>
         <tbody>
@@ -68,7 +73,10 @@ Admin Member List
                     </form>
                 </td>
                 <td>
-                    <a href="{{ url_for('profile', user_id=supplier.user_id) }}" class="btn btn-info">View Profile</a> <!-- View Profile Button -->
+                    <a href="{{ url_for('profile', user_id=supplier.user_id) }}" class="btn btn-info">View Profile</a>  <!-- View Profile Button -->
+                </td>
+                <td>
+                    <a href="{{ url_for('supplier_summary', user_id=supplier.user_id) }}" class="btn btn-warning">View Summary</a> <!-- View Summary Button -->
                 </td>
             </tr>
             {% endfor %}
@@ -87,7 +95,8 @@ Admin Member List
                 <th>Experience</th>
                 <th>Document</th>
                 <th>Actions</th>
-                <th>View Profile</th> <!-- Added View Profile column -->
+                <th>View Profile</th> <!-- View Profile column -->
+                <th>View Summary</th> <!-- View Summary column -->
             </tr>
         </thead>
         <tbody>
@@ -107,7 +116,10 @@ Admin Member List
                     </form>
                 </td>
                 <td>
-                    <a href="{{ url_for('profile', user_id=supplier.user_id) }}" class="btn btn-info">View Profile</a> <!-- View Profile Button -->
+                    <a href="{{ url_for('profile', user_id=supplier.user_id) }}" class="btn btn-info">View Profile</a>
+                </td>
+                <td>
+                    <a href="{{ url_for('supplier_summary', user_id=supplier.user_id) }}" class="btn btn-warning">View Summary</a> <!-- View Summary Button -->
                 </td>
             </tr>
             {% endfor %}

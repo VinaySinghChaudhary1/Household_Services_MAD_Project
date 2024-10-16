@@ -40,6 +40,8 @@ Service Requests
                                 {{ request.date_completed.strftime('%Y-%m-%d') if request.date_completed else 'N/A' }}
                             {% elif request.status == 'returned' %}
                                 {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
+                            {% elif request.status == 'rejected' %}
+                                {{ request.date_rejected.strftime('%Y-%m-%d') if request.date_rejected else 'N/A' }}
                             {% else %}
                                 N/A
                             {% endif %}

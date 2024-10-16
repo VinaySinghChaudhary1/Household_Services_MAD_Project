@@ -101,7 +101,7 @@
                     <input class="form-control me-2" type="search" name="query" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-light" type="submit">Search</button>
                 </form>
-
+               
                 <!-- Account Dropdown Menu -->
                 <ul class="navbar-nav">
                     {% if session.get('username') %}
@@ -111,11 +111,27 @@
                                 Account
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="accountDropdown">
-                                <li><a class="dropdown-item" href="{{ url_for('profile', user_id=session.get('user_id')) }}">Profile</a></li> <!-- Profile Link by its user id -->
+                                <li><a class="dropdown-item" href="{{ url_for('profile', user_id=session.get('user_id')) }}">Profile</a></li>
                                 <li><a class="dropdown-item" href="{% if session.get('role') == 'supplier' %}{{ url_for('supplier_dashboard') }}{% elif session.get('role') == 'customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'admin' %}{{ url_for('admin_dashboard') }}{% endif %}">Dashboard</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('view_service_requests') }}">Service Requests</a></li>
+                        
+                                <!-- Summary Link Updated -->
+                                <li>
+                                    <a class="dropdown-item" href="
+                                        {% if session.get('role') == 'supplier' %}
+                                            {{ url_for('supplier_summary', user_id=session.get('user_id')) }}
+                                        {% elif session.get('role') == 'customer' %}
+                                            {{ url_for('customer_summary', user_id=session.get('user_id')) }}
+                                        {% elif session.get('role') == 'admin' %}
+                                            {{ url_for('admin_summary') }}
+                                        {% endif %}
+                                    ">
+                                        Summary
+                                    </a>
+                                </li>
 
-                                <!-- Member List for Admin -->
+
+                                <!-- Member List Link Updated -->
                                 {% if session.get('role') == 'admin' %}
                                     <li><a class="dropdown-item" href="{{ url_for('member_list') }}">Member List</a></li>
                                 {% endif %}

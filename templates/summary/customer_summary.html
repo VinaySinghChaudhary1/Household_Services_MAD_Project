@@ -1,0 +1,34 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Customer Summary
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4">
+        <div class="card-header bg-primary text-white text-center">
+            <h2>Customer Summary</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card bg-light border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Service Requests: <span class="text-primary">{{ service_requests|length }}</span></h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Pending: <span class="badge bg-warning">{{ pending_count }}</span></li>
+                                <li class="list-group-item">Accepted: <span class="badge bg-info">{{ accepted_count }}</span></li>
+                                <li class="list-group-item">Rejected: <span class="badge bg-danger">{{ rejected_count }}</span></li>
+                                <li class="list-group-item">Completed: <span class="badge bg-success">{{ completed_count }}</span></li>
+                                <li class="list-group-item">Returned: <span class="badge bg-secondary">{{ returned_count }}</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Add a statistical chart here using a chart library like Chart.js -->
+        </div>
+    </div>
+</div>
+{% endblock %}

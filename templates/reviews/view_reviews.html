@@ -4,20 +4,58 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Reviews for Service Request #{{ reviews[0].service_request_id if reviews else 'No Reviews' }}</h1>
+    <h1 class="mb-4">Reviews for Service Request #{{ reviews[0].service_request_id if reviews else 'No Reviews' }}</h1>
 
     {% if reviews %}
-        <ul class="list-group">
+        <div class="row">
             {% for review in reviews %}
-                <li class="list-group-item">
-                    <strong>Rating:</strong> {{ review.rating }} / 5
-                    <p>{{ review.comment }}</p>
-                    <small>Reviewed by {{ review.customer.full_name }} on {{ review.created_at.strftime('%Y-%m-%d') }}</small>
-                </li>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <strong>Rating:</strong>
+                                <!-- Display star rating -->
+                                {% for i in range(1, 6) %}
+                                    {% if i <= review.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-2">{{ review.rating }} / 5</span>
+                            </h5>
+                            <!-- Comment Box -->
+                            <div class="bg-light p-3 rounded mt-3">
+                                <p class="mb-0"><strong>Comment:</strong></p>
+                                <p class="mb-0">{{ review.comment }}</p>
+                            </div>
+                            <footer class="blockquote-footer mt-3">
+                                Reviewed by <cite title="Customer">{{ review.customer.full_name }}</cite>
+                                on {{ review.created_at.strftime('%Y-%m-%d') }}
+                            </footer>
+                        </div>
+                    </div>
+                </div>
             {% endfor %}
-        </ul>
+        </div>
     {% else %}
-        <p>No reviews available for this service request.</p>
+        <p class="alert alert-info">No reviews available for this service request.</p>
     {% endif %}
 </div>
+
+    <!-- Go Back Button -->
+    <div class="mt-3 text-start">
+        {% if session.get('role') == 'supplier' %}
+            <a href="{{ url_for('supplier_dashboard') }}" class="btn btn-secondary">Go Back to Supplier Dashboard</a>
+        {% elif session.get('role') == 'customer' %}
+            <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Go Back to Customer Dashboard</a>
+        {% elif session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Go Back to Admin Dashboard</a>
+        {% endif %}
+    </div>
+
+
+
+<!-- Add Font Awesome for star icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}
