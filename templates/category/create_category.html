@@ -10,16 +10,26 @@ Create Category
     <form action="{{ url_for('create_category') }}" method="POST" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="category_name" class="form-label">Category Name</label>
-            <input type="text" class="form-control" id="category_name" name="category_name" required>
+            {% if session.get('role') == 'admin' %}
+                <!-- Admin can type the category name -->
+                <input type="text" class="form-control" id="category_name" name="category_name" placeholder="Enter a new category name" required>
+            {% elif session.get('role') == 'supplier' %}
+                <!-- Supplier can only add their own registered service name as a category -->
+                <input type="text" class="form-control" id="category_name" name="category_name" value="{{ supplier_service_name }}" readonly>
+                <small class="text-muted">You can only add your registered service name as a category.</small>
+            {% endif %}
         </div>
+        <!-- Category Description Input -->
         <div class="mb-3">
             <label for="category_description" class="form-label">Category Description</label>
             <textarea class="form-control" id="category_description" name="category_description" rows="3" required></textarea>
         </div>
+        <!-- Category Picture Input -->
         <div class="mb-3">
             <label for="picture" class="form-label">Category Picture</label>
             <input type="file" class="form-control" id="picture" name="picture" accept="image/*">
         </div>
+        <!-- Create Category and Cancel Button -->
         <div class="mb-3 d-flex gap-2">
             <button type="submit" class="btn btn-primary">Create Category</button>
             <a href="{{ url_for('category_dashboard') }}" class="btn btn-secondary">Cancel</a>

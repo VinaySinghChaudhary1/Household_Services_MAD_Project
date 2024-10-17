@@ -12,6 +12,7 @@ Supplier Registration
             <div class="register-container bg-white p-4 rounded shadow">
                 <h2 class="text-center mb-3" style="font-size: 1.5rem;">Supplier Registration</h2>
                 <form id="supplierForm" action="{{ url_for('register_supplier') }}" method="POST" enctype="multipart/form-data">
+                    
                     <!-- Full Name and Username on the same row -->
                     <div class="row">
                         <div class="col-md-6 mb-2">
@@ -25,17 +26,29 @@ Supplier Registration
                         </div>
                     </div>
 
-                    <!-- Email and Service Name on the same row -->
+                    <!-- Email and Service Name(Category Name) on the same row -->
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <label for="email" class="form-label" style="font-size: 0.9rem;">Email</label>
                             <input type="email" class="form-control form-control-sm" id="email" name="email" placeholder="Enter your email" required>
                         </div>
-
+    
                         <div class="col-md-6 mb-2">
                             <label for="service_name" class="form-label" style="font-size: 0.9rem;">Service Name</label>
-                            <input type="text" class="form-control form-control-sm" id="service_name" name="service_name" placeholder="Enter your service name" required>
+                            <select class="form-control form-control-sm" id="service_name" name="service_name">
+                                <option value="">Select a Service</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.category_name }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Choose from the list or type a new service below if not found.</small>
                         </div>
+                    </div>
+
+                    <!-- Additional Service Name input -->
+                    <div class="mb-2">
+                        <label for="new_service_name" class="form-label" style="font-size: 0.9rem;">Or Type New Service Name</label>
+                        <input type="text" class="form-control form-control-sm" id="new_service_name" name="new_service_name" placeholder="Enter a new service name if not listed">
                     </div>
 
                     <!-- Password and Confirm Password on the same row -->
@@ -91,5 +104,33 @@ Supplier Registration
             </div>
         </div>
     </div>
+
+
+    
+<!-- JavaScript to handle enabling/disabling of fields -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const serviceNameSelect = document.getElementById("service_name");
+        const newServiceNameInput = document.getElementById("new_service_name");
+
+        // Disable the other input when one is filled
+        serviceNameSelect.addEventListener("change", function () {
+            if (serviceNameSelect.value !== "") {
+                newServiceNameInput.disabled = true;
+            } else {
+                newServiceNameInput.disabled = false;
+            }
+        });
+
+        newServiceNameInput.addEventListener("input", function () {
+            if (newServiceNameInput.value.trim() !== "") {
+                serviceNameSelect.disabled = true;
+            } else {
+                serviceNameSelect.disabled = false;
+            }
+        });
+    });
+</script>
+
 
 {% endblock %}

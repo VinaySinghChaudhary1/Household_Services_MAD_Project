@@ -14,7 +14,7 @@ class User(db.Model):
     address = db.Column(db.String, nullable=False)
     pincode = db.Column(db.String, nullable=False)
     role = db.Column(db.String, nullable=False)  # 'customer' or 'supplier'
-    service_name = db.Column(db.String)  # Only applicable if the user is a supplier
+    service_name = db.Column(db.String, unique=True, nullable=False)  # Only applicable if the user is a supplier
     experience_years = db.Column(db.Integer)  # Only applicable if the user is a supplier
     document = db.Column(db.String)  # Path or name of the uploaded document, only for suppliers
     is_verified = db.Column(db.Boolean, default=False)  # For supplier verification
@@ -46,6 +46,7 @@ class Category(db.Model):
         self.category_name = category_name
         self.category_description = category_description
         self.picture = picture
+
 
 class Service(db.Model):
     __tablename__ = "service"

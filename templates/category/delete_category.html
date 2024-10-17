@@ -15,7 +15,6 @@ Delete Category Confirmation
         <!-- Category details including name -->
         <div class="col-md-6">
             <div class="card">
-                <!-- Display a default image or a placeholder -->
                 {% if category.picture %}
                     <img src="{{ url_for('static', filename='uploads/' + category.picture) }}" class="card-img-top" alt="Category Image" style="height: 300px; object-fit: cover;">
                 {% else %}

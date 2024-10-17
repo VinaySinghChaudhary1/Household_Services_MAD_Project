@@ -2,13 +2,15 @@
 
 {% block title %}
 Category Dashboard
-{% endblock %}  
+{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Welcome to Category Dashboard</h1>
+        <h1>Welcome to Category Dashboard, {{ current_user.full_name }}</h1>
+        {% if session.get('role') == 'admin' %}
         <a href="{{ url_for('create_category') }}" class="btn btn-primary">Add New Category</a>
+        {% endif %}
     </div>
 
     <!-- Check if categories exist -->
@@ -26,9 +28,20 @@ Category Dashboard
                         <div class="card-body">
                             <h5 class="card-title">{{ category.category_name }}</h5>
                             <p class="card-text">{{ category.category_description }}</p>
+                            {% if session.get('role') == 'admin' %}
+                            <p><strong>Category ID:</strong> {{ category.category_id }}</p>
+                            {% endif %}
+                            <!-- Display the supplier name if a matching service name and role is found -->
+                            <p><strong>Supplier Name:</strong> 
+                                {% set supplier = users | selectattr('role', 'equalto', 'supplier') 
+                                    | selectattr('service_name', 'equalto', category.category_name) | first %}
+                                {{ supplier.full_name if supplier else 'Admin' }}
+                            </p>
                             <div class="d-flex justify-content-between">
+                                {% if session.get('role') == 'admin' or session.get('role') == 'supplier' %}
                                 <a href="{{ url_for('edit_category', category_id=category.category_id) }}" class="btn btn-warning">Edit</a>
                                 <a href="{{ url_for('delete_category', category_id=category.category_id) }}" class="btn btn-danger">Delete</a>
+                                {% endif %}
                                 <a href="{{ url_for('service_dashboard', category_id=category.category_id) }}" class="btn btn-info">Visit More Services</a>
                             </div>
                         </div>
