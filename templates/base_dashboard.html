@@ -12,25 +12,25 @@
             font-weight: bold;
             font-size: 1.5rem;
         }
-    
+
         .nav-item .nav-link {
             font-size: 1.1rem;
         }
-    
+
         /* Customize background color */
         .navbar {
             background-color: #343a40;
             padding: 1rem;
         }
-    
+
         .navbar .nav-link, .navbar .navbar-brand {
             color: white;
         }
-    
+
         .navbar .nav-link:hover {
             color: #d4d4d4;
         }
-    
+
         /* Footer styles */
         footer {
             background-color: #343a40;
@@ -41,28 +41,27 @@
             position: relative;
             bottom: 0;
         }
-    
+
         footer a {
             color: #f8f9fa;
             margin: 0 10px;
             text-decoration: none;
         }
-    
+
         footer a:hover {
             text-decoration: underline;
         }
-    
+
         /* Ensure page content is scrollable on small screens */
         body {
             overflow-x: hidden;
         }
-    
+
         .container {
             max-width: 100%;
             padding: 0 15px;
         }
     </style>
-    
 </head>
 
 <body>
@@ -89,19 +88,29 @@
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
+                        <a class="btn btn-outline-light ms-2" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/category/category_dashboard.html">Category</a>
+                        <a class="btn btn-outline-light ms-2" href="/category/category_dashboard.html">Category</a>
                     </li>
+                
+                    <!-- Display the username next to the Category button if the user is logged in -->
+                    {% if session.get('username') %} 
+                    <li class="nav-item">
+                        <span class="btn ms-2" style="background-color: yellow; color: black;">
+                            Session User = {{ session.get('username') }}
+                        </span>
+                    </li>
+                    {% endif %}
                 </ul>
+                
 
                 <!-- Search Form -->
                 <form class="d-flex me-3" action="/search" method="GET">
                     <input class="form-control me-2" type="search" name="query" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-light" type="submit">Search</button>
                 </form>
-               
+
                 <!-- Account Dropdown Menu -->
                 <ul class="navbar-nav">
                     {% if session.get('username') %}
@@ -114,7 +123,7 @@
                                 <li><a class="dropdown-item" href="{{ url_for('profile', user_id=session.get('user_id')) }}">Profile</a></li>
                                 <li><a class="dropdown-item" href="{% if session.get('role') == 'supplier' %}{{ url_for('supplier_dashboard') }}{% elif session.get('role') == 'customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'admin' %}{{ url_for('admin_dashboard') }}{% endif %}">Dashboard</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('view_service_requests') }}">Service Requests</a></li>
-                        
+
                                 <!-- Summary Link Updated -->
                                 <li>
                                     <a class="dropdown-item" href="
@@ -129,7 +138,6 @@
                                         Summary
                                     </a>
                                 </li>
-
 
                                 <!-- Member List Link Updated -->
                                 {% if session.get('role') == 'admin' %}

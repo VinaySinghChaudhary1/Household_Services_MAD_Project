@@ -14,7 +14,7 @@ class User(db.Model):
     address = db.Column(db.String, nullable=False)
     pincode = db.Column(db.String, nullable=False)
     role = db.Column(db.String, nullable=False)  # 'customer' or 'supplier'
-    service_name = db.Column(db.String, unique=True, nullable=False)  # Only applicable if the user is a supplier
+    service_name = db.Column(db.String, nullable=False)  # Only applicable if the user is a supplier
     experience_years = db.Column(db.Integer)  # Only applicable if the user is a supplier
     document = db.Column(db.String)  # Path or name of the uploaded document, only for suppliers
     is_verified = db.Column(db.Boolean, default=False)  # For supplier verification
@@ -52,7 +52,7 @@ class Service(db.Model):
     __tablename__ = "service"
     service_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)  # Link to Category model
-    supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)  # Link to the supplier
+    supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False)  # Link to the supplier with cascade delete
     service_name = db.Column(db.String, unique=True, nullable=False)
     service_description = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -73,6 +73,7 @@ class Service(db.Model):
         self.image = image
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
+
 
 
 class ServiceRequest(db.Model):

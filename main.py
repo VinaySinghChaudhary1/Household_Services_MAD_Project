@@ -197,43 +197,46 @@ def register_supplier():
     categories = Category.query.all()
 
     if request.method == 'POST':
-        # Retrieve form data using .get() to avoid KeyError
-        full_name = request.form.get('fullname')
-        username = request.form.get('username')
-        email = request.form.get('email')
-        service_name = request.form.get('service_name')  # Use .get() to safely access the form field
-        new_service_name = request.form.get('new_service_name')
-        experience_years = request.form.get('experience')
-        address = request.form.get('address')
-        pincode = request.form.get('pincode')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        document = request.files.get('document')
-
-        # Ensure at least one service name is provided
-        if not service_name and not new_service_name:
-            flash("Please select a service or type a new service name.", "warning")
-            return redirect(url_for('register_supplier'))
-
-        if service_name and new_service_name:
-            flash("Please either select a service or type a new service name, not both.", "warning")
-            return redirect(url_for('register_supplier'))
-
-        # Use the appropriate service name
-        final_service_name = new_service_name if new_service_name else service_name
-
-        # Validation checks
-        if password != confirm_password:
-            flash("Passwords do not match", "warning")
-            return redirect(url_for('register_supplier'))
-
-        # Check if email or username already exists
-        existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
-        if existing_user:
-            flash("Email or username already exists", "danger")
-            return redirect(url_for('register_supplier'))
-
         try:
+            # Retrieve form data using .get() to avoid KeyError
+            full_name = request.form.get('fullname')
+            username = request.form.get('username')
+            email = request.form.get('email')
+            service_name = request.form.get('service_name')  # Use .get() to safely access the form field
+            new_service_name = request.form.get('new_service_name')
+            experience_years = request.form.get('experience')
+            address = request.form.get('address')
+            pincode = request.form.get('pincode')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            document = request.files.get('document')
+
+            # Ensure at least one service name is provided
+            if not service_name and not new_service_name:
+                flash("Please select a service or type a new service name.", "warning")
+                return redirect(url_for('register_supplier'))
+
+            if service_name and new_service_name:
+                flash("Please either select a service or type a new service name, not both.", "warning")
+                return redirect(url_for('register_supplier'))
+
+            # Use the appropriate service name
+            final_service_name = new_service_name if new_service_name else service_name
+
+            # Validation checks
+            if password != confirm_password:
+                flash("Passwords do not match", "warning")
+                return redirect(url_for('register_supplier'))
+
+            # Check if email or username already exists
+            existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
+            if existing_user:
+                flash("Email or username already exists", "danger")
+                return redirect(url_for('register_supplier'))
+
+            # Hash the password
+            hashed_password = generate_password_hash(password)
+
             # Save the uploaded document
             document_filename = secure_filename(document.filename) if document else None
             if document:
@@ -244,7 +247,7 @@ def register_supplier():
                 full_name=full_name,
                 username=username,
                 email=email,
-                password=generate_password_hash(password),  # Hash the password
+                password=hashed_password,  # Store the hashed password
                 address=address,
                 pincode=pincode,
                 role="supplier",
@@ -256,24 +259,24 @@ def register_supplier():
             # Add the new supplier to the database
             db.session.add(new_supplier)
 
-            # Add the new category if it's a newly typed service name
-            if new_service_name and not Category.query.filter_by(category_name=new_service_name).first():
-                new_category = Category(category_name=new_service_name, category_description="Automatically added", picture=None)
-                db.session.add(new_category)
+            # We DO NOT create a new category here; the category will be created upon admin approval.
 
             db.session.commit()
 
             # Successful registration flash message
-            flash("Registration successful!", "success")
+            flash("Registration successful! Your account will be verified by an admin.", "success")
             return redirect(url_for('login'))
 
         except Exception as e:
-            # Handle errors during registration
+            # Handle errors during registration and provide debug information for the exception
+            print(f"Error during supplier registration: {e}")
             flash("Something went wrong during registration. Please try again.", "danger")
             return redirect(url_for('register_supplier'))
 
     # For GET request, render the registration page with existing categories
     return render_template('users/register_supplier.html', categories=categories)
+
+
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -408,7 +411,6 @@ def profile(user_id):
     # Render the profile template with the user details
     return render_template('profile/profile.html', user=user)
 
-
 @app.route('/edit_profile/<int:user_id>/', methods=['GET', 'POST'])
 def edit_profile(user_id):
     user = User.query.get_or_404(user_id)
@@ -448,27 +450,35 @@ def edit_profile(user_id):
     
     return render_template('profile/edit_profile.html', user=user)
 
-
 @app.route('/delete_profile/<int:user_id>/', methods=['GET', 'POST'])
 def delete_profile(user_id):
     user = User.query.get_or_404(user_id)
-    
+
     # Check if the logged-in user is allowed to delete this profile
     if session.get('role') != 'admin' and session.get('user_id') != user_id:
         flash("You do not have permission to delete this profile.", "danger")
         return redirect(url_for('profile', user_id=session.get('user_id')))
-    
+
     if request.method == 'POST':
+        # Delete all services associated with the supplier if the user is a supplier
+        if user.role == 'supplier':
+            services = Service.query.filter_by(supplier_id=user.user_id).all()
+            for service in services:
+                db.session.delete(service)
+        
+        # Delete the user (supplier or admin)
         db.session.delete(user)
         db.session.commit()
-        flash("Profile deleted successfully!", "success")
+        flash("Profile and associated services deleted successfully!", "success")
+        
         # If the admin deletes a profile, redirect back to the member list; otherwise, redirect to login
         if session.get('role') == 'admin':
             return redirect(url_for('member_list'))
         else:
             return redirect(url_for('login'))
-    
+
     return render_template('profile/delete_profile.html', user=user)
+
 
 
 
@@ -485,11 +495,29 @@ def member_list():
 @login_required(role="admin")
 def verify_supplier(user_id):
     supplier = User.query.get_or_404(user_id)
+
+    # Verify if the user is a supplier and not already verified
     if supplier.role == 'supplier' and not supplier.is_verified:
         supplier.is_verified = True
+
+        # Check if the supplier's service name should be added as a new category
+        if supplier.service_name and not Category.query.filter_by(category_name=supplier.service_name).first():
+            # Create a new category based on the supplier's service name
+            new_category = Category(
+                category_name=supplier.service_name,
+                category_description="Automatically added by supplier registration",
+                picture=None  # No picture initially, can be added later
+            )
+            db.session.add(new_category)
+
+        # Commit changes to the database
         db.session.commit()
-        flash(f'Supplier {supplier.full_name} has been verified.', 'success')
+
+        flash(f'Supplier {supplier.full_name} has been verified, and the service "{supplier.service_name}" has been added as a category.', 'success')
+    
     return redirect(url_for('member_list'))
+
+
 
 @app.route('/admin/block_user/<int:user_id>', methods=['POST', 'GET'])
 @login_required(role="admin")
@@ -543,8 +571,6 @@ def category_dashboard():
 
     return render_template('category/category_dashboard.html', categories=categories, users=users, current_user=current_user)
 
-
-
 @app.route('/create_category', methods=['GET', 'POST'])
 def create_category():
     # Ensure the user is logged in and is an admin
@@ -588,7 +614,6 @@ def create_category():
     # Render the create category template for admin
     return render_template('category/create_category.html')
 
-
 @app.route('/edit_category/<int:category_id>', methods=['GET', 'POST'])
 def edit_category(category_id):
     existing_category = Category.query.get(category_id)
@@ -629,7 +654,6 @@ def edit_category(category_id):
         return redirect(url_for('category_dashboard'))
 
     return render_template('category/edit_category.html', category=existing_category)
-
 
 @app.route('/delete_category/<int:category_id>', methods=['GET', 'POST'])
 def delete_category(category_id):
@@ -679,7 +703,7 @@ def service_dashboard(category_id):
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
 def create_service(category_id):
-    # Check if the category exists, if not, redirect to home
+    # Check if the category exists, if not, redirect to the category dashboard
     category = Category.query.get(category_id)
     if not category:
         flash('The requested category does not exist.', 'warning')
@@ -689,6 +713,13 @@ def create_service(category_id):
     if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
         flash('You must be logged in as an admin or supplier to create a service.', 'danger')
         return redirect(url_for('login'))  # Redirect to login if not authorized
+
+    # If the user is a supplier, ensure they can only create services in their own category (service_name)
+    if session.get('role') == 'supplier':
+        supplier = User.query.filter_by(user_id=session.get('user_id')).first()
+        if supplier and supplier.service_name != category.category_name:
+            flash("You can only create services in your own service category.", 'danger')
+            return redirect(url_for('category_dashboard'))
 
     if request.method == 'POST':
         # Extract form data
@@ -722,19 +753,26 @@ def create_service(category_id):
 
     return render_template('service/create_service.html', category_id=category_id)
 
+
 @app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
-# @login_required(role="admin, supplier")
 def edit_service(service_id):
-    # Manually check if the service exists
+    # Fetch the service
     service = Service.query.get(service_id)
     if not service:
         flash('The requested service does not exist.', 'warning')
-        return redirect(url_for('category_dashboard'))  # Redirect to service dashboard (use a default category ID)
+        return redirect(url_for('category_dashboard'))  # Redirect to the category dashboard
 
     # Ensure the user is logged in and is either an admin or supplier
     if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
         flash('You must be logged in as an admin or supplier to edit this service.', 'danger')
         return redirect(url_for('login'))
+
+    # If the user is a supplier, ensure they can only edit services they own (check full_name and username)
+    if session.get('role') == 'supplier':
+        supplier = User.query.filter_by(user_id=session.get('user_id')).first()
+        if supplier and (supplier.full_name != service.supplier.full_name or supplier.username != service.supplier.username):
+            flash("You can only edit your own services.", 'danger')
+            return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     if request.method == 'POST':
         service.service_name = request.form['service_name']
@@ -747,26 +785,32 @@ def edit_service(service_id):
             image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             service.image = filename
 
-        # Supplier ID remains unchanged
         db.session.commit()
         flash('Service updated successfully!', 'success')
         return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/edit_service.html', service=service)
 
+
 @app.route('/confirm_delete_service/<int:service_id>', methods=['GET', 'POST'])
-# @login_required(role="admin, supplier")
 def confirm_delete_service(service_id):
-    # Manually check if the service exists
+    # Fetch the service
     service = Service.query.get(service_id)
     if not service:
         flash('The requested service does not exist.', 'warning')
-        return redirect(url_for('category_dashboard'))  # Redirect to a default category service dashboard (you can modify category_id)
+        return redirect(url_for('category_dashboard'))  # Redirect to a default category service dashboard
 
     # Ensure the user is logged in and is either an admin or supplier
     if 'user_id' not in session or session.get('role') not in ['admin', 'supplier']:
         flash('You must be logged in as an admin or supplier to delete this service.', 'danger')
         return redirect(url_for('login'))
+
+    # If the user is a supplier, ensure they can only delete services they own (check full_name and username)
+    if session.get('role') == 'supplier':
+        supplier = User.query.filter_by(user_id=session.get('user_id')).first()
+        if supplier and (supplier.full_name != service.supplier.full_name or supplier.username != service.supplier.username):
+            flash("You can only delete your own services.", 'danger')
+            return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     if request.method == 'POST':
         if request.form.get("confirm") == "yes":
@@ -781,6 +825,8 @@ def confirm_delete_service(service_id):
             return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/delete_service.html', service=service)
+
+
 
 
 

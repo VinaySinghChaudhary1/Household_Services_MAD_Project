@@ -17,12 +17,12 @@ Supplier Registration
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <label for="fullname" class="form-label" style="font-size: 0.9rem;">Full Name</label>
-                            <input type="text" class="form-control form-control-sm" id="fullname" name="fullname" placeholder="Full name" required>
+                            <input type="text" class="form-control form-control-sm" id="fullname" name="fullname" placeholder="Full name" autocomplete="name" required>
                         </div>
 
                         <div class="col-md-6 mb-2">
                             <label for="username" class="form-label" style="font-size: 0.9rem;">Username</label>
-                            <input type="text" class="form-control form-control-sm" id="username" name="username" placeholder="Username" required>
+                            <input type="text" class="form-control form-control-sm" id="username" name="username" placeholder="Username" autocomplete="username" required>
                         </div>
                     </div>
 
@@ -30,12 +30,12 @@ Supplier Registration
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <label for="email" class="form-label" style="font-size: 0.9rem;">Email</label>
-                            <input type="email" class="form-control form-control-sm" id="email" name="email" placeholder="Enter your email" required>
+                            <input type="email" class="form-control form-control-sm" id="email" name="email" placeholder="Enter your email" autocomplete="email" required>
                         </div>
     
                         <div class="col-md-6 mb-2">
                             <label for="service_name" class="form-label" style="font-size: 0.9rem;">Service Name</label>
-                            <select class="form-control form-control-sm" id="service_name" name="service_name">
+                            <select class="form-control form-control-sm" id="service_name" name="service_name" autocomplete="off">
                                 <option value="">Select a Service</option>
                                 {% for category in categories %}
                                     <option value="{{ category.category_name }}">{{ category.category_name }}</option>
@@ -48,19 +48,19 @@ Supplier Registration
                     <!-- Additional Service Name input -->
                     <div class="mb-2">
                         <label for="new_service_name" class="form-label" style="font-size: 0.9rem;">Or Type New Service Name</label>
-                        <input type="text" class="form-control form-control-sm" id="new_service_name" name="new_service_name" placeholder="Enter a new service name if not listed">
+                        <input type="text" class="form-control form-control-sm" id="new_service_name" name="new_service_name" placeholder="Enter a new service name if not listed" autocomplete="off">
                     </div>
 
                     <!-- Password and Confirm Password on the same row -->
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <label for="password" class="form-label" style="font-size: 0.9rem;">Password</label>
-                            <input type="password" class="form-control form-control-sm" id="password" name="password" placeholder="Enter a password" required>
+                            <input type="password" class="form-control form-control-sm" id="password" name="password" placeholder="Enter a password" autocomplete="new-password" required>
                         </div>
 
                         <div class="col-md-6 mb-2">
                             <label for="confirm_password" class="form-label" style="font-size: 0.9rem;">Confirm Password</label>
-                            <input type="password" class="form-control form-control-sm" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
+                            <input type="password" class="form-control form-control-sm" id="confirm_password" name="confirm_password" placeholder="Confirm your password" autocomplete="new-password" required>
                         </div>
                     </div>
 
@@ -68,12 +68,12 @@ Supplier Registration
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <label for="experience" class="form-label" style="font-size: 0.9rem;">Experience (Years)</label>
-                            <input type="number" class="form-control form-control-sm" id="experience" name="experience" placeholder="Years of experience" required min="0">
+                            <input type="number" class="form-control form-control-sm" id="experience" name="experience" placeholder="Years of experience" autocomplete="off" required min="0">
                         </div>
 
                         <div class="col-md-6 mb-2">
                             <label for="address" class="form-label" style="font-size: 0.9rem;">Address</label>
-                            <input type="text" class="form-control form-control-sm" id="address" name="address" placeholder="Enter your address" required>
+                            <input type="text" class="form-control form-control-sm" id="address" name="address" placeholder="Enter your address" autocomplete="street-address" required>
                         </div>
                     </div>
 
@@ -81,12 +81,12 @@ Supplier Registration
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <label for="role" class="form-label" style="font-size: 0.9rem;">Role</label>
-                            <input type="text" class="form-control form-control-sm" id="role" name="role" value="Supplier" readonly>
+                            <input type="text" class="form-control form-control-sm" id="role" name="role" value="Supplier" readonly autocomplete="off">
                         </div>
 
                         <div class="col-md-6 mb-2">
                             <label for="pincode" class="form-label" style="font-size: 0.9rem;">Pin Code</label>
-                            <input type="text" class="form-control form-control-sm" id="pincode" name="pincode" placeholder="Enter your pin code" required>
+                            <input type="text" class="form-control form-control-sm" id="pincode" name="pincode" placeholder="Enter your pin code" autocomplete="postal-code" required>
                         </div>
                     </div>
 
@@ -94,7 +94,7 @@ Supplier Registration
                     <div class="row">
                         <div class="col-md-12 mb-2">
                             <label for="document" class="form-label" style="font-size: 0.9rem;">Upload Document</label>
-                            <input type="file" class="form-control form-control-sm" id="document" name="document" required>
+                            <input type="file" class="form-control form-control-sm" id="document" name="document" autocomplete="off" required>
                         </div>
                     </div>
 
