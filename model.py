@@ -121,6 +121,7 @@ class Review(db.Model):
     supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)  # Rating from 1 to 5
     comment = db.Column(db.String(500))  # Optional comment for the review
+    reply = db.Column(db.String(500))  # Supplier/Admin reply to the review
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -129,11 +130,13 @@ class Review(db.Model):
     customer = db.relationship('User', foreign_keys=[customer_id], backref='customer_reviews')
     supplier = db.relationship('User', foreign_keys=[supplier_id], backref='supplier_reviews')
 
-    def __init__(self, service_id, service_request_id, customer_id, supplier_id, rating, comment=None, created_at=None):
+    def __init__(self, service_id, service_request_id, customer_id, supplier_id, rating, comment=None, reply=None):
         self.service_id = service_id
         self.service_request_id = service_request_id  # Assign the service_request_id
         self.customer_id = customer_id
         self.supplier_id = supplier_id
         self.rating = rating
         self.comment = comment
+        self.reply = reply
         self.created_at = datetime.utcnow()
+

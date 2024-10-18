@@ -11,14 +11,15 @@ Customer Summary
             <h2>Customer Summary</h2>
         </div>
         <div class="card-body">
-            <!-- Textual Summary for Total Service Requests -->
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card bg-light border-0 shadow-sm">
+            <!-- Two sections: Total Service Requests and Chart, side by side -->
+            <div class="row">
+                <!-- Left: Total Service Requests Summary -->
+                <div class="col-md-6">
+                    <div class="card bg-light border-0 shadow-sm h-100">
                         <div class="card-body">
-                            <h5 class="card-title">Total Service Requests: 
-                                <span class="text-primary">{{ service_requests|length }}</span>
-                            </h5>
+                            <h5 class="card-title">Total Service Requests: {{ service_requests|length }}</h5>
+                            <!-- <p class="fs-3 text-primary">{{ service_requests|length }}</p> -->
+                            <br>
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">Pending: <span class="badge bg-warning">{{ pending_count }}</span></li>
                                 <li class="list-group-item">Accepted: <span class="badge bg-info">{{ accepted_count }}</span></li>
@@ -29,13 +30,10 @@ Customer Summary
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Chart Section Starts Below -->
-            <div class="row mt-5">
-                <!-- Bar Chart for Service Requests Status -->
-                <div class="col-md-12 mb-4">
-                    <div class="card bg-light border-0 shadow-sm">
+                <!-- Right: Service Requests Status Chart -->
+                <div class="col-md-6">
+                    <div class="card bg-light border-0 shadow-sm h-100">
                         <div class="card-body">
                             <h5 class="card-title">Service Requests Status (Chart)</h5>
                             <canvas id="serviceStatusChart" style="max-height: 300px;"></canvas>

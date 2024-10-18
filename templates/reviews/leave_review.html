@@ -1,49 +1,74 @@
 {% extends 'base_dashboard.html' %}
 
-{% block title %}Review{% endblock %}
+{% block title %}Leave a Review{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Leave a Review for {{ service_request.service.service_name }}</h1>
+    <div class="row">
+        <!-- Left: Leave a Review Section -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3>Leave a Review</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('leave_review', service_request_id=service_request.service_request_id) }}" method="POST">
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating (1 to 5)</label>
+                            <select class="form-select" id="rating" name="rating" required>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="3">3 - Good</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
 
-    <form action="{{ url_for('leave_review', service_request_id=service_request.service_request_id) }}" method="POST">
-        <div class="mb-3">
-            <label for="rating" class="form-label">Rating (1 to 5)</label>
-            <select class="form-select" id="rating" name="rating" required>
-                <option value="1">1 - Poor</option>
-                <option value="2">2 - Fair</option>
-                <option value="3">3 - Good</option>
-                <option value="4">4 - Very Good</option>
-                <option value="5">5 - Excellent</option>
-            </select>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comment (optional)</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Share your experience"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                            <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label for="comment" class="form-label">Comment (optional)</label>
-            <textarea class="form-control" id="comment" name="comment" rows="4"></textarea>
+        <!-- Right: Review History Section -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white text-center">
+                    <h3>Review History</h3>
+                </div>
+                <div class="card-body">
+                    {% if review_history %}
+                        <ul class="list-group">
+                            {% for review in review_history %}
+                            <li class="list-group-item">
+                                <p><strong>Rating:</strong> {{ review.rating }}</p>
+                                <p><strong>Comment:</strong> {{ review.comment or 'No comment provided' }}</p>
+                                {% if review.reply %}
+                                <p><strong>Reply by Supplier:</strong> {{ review.reply }}</p>
+                                {% endif %}
+                                <p><small><strong>Date:</strong> {{ review.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+                            </li>
+                            {% else %}
+                            <li class="list-group-item text-center">No previous reviews found.</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="alert alert-info text-center">No review history available for this service.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-
-        <button type="submit" class="btn btn-primary">Submit Review</button>
-        <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Cancel</a>
-    </form>
-
-    <!-- Review History Section -->
-    {% if review_history %}
-    <div class="mt-5">
-        <h3>Review History for {{ service_request.service.service_name }}</h3>
-        <ul class="list-group">
-            {% for review in review_history %}
-            <li class="list-group-item">
-                <p><strong>Rating:</strong> {{ review.rating }}</p>
-                <p><strong>Comment:</strong> {{ review.comment or 'No comment provided' }}</p>
-                <p><small><strong>Date:</strong> {{ review.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
-            </li>
-            {% else %}
-            <li class="list-group-item text-center">No previous reviews found.</li>
-            {% endfor %}
-        </ul>
     </div>
-    {% endif %}
 </div>
-{% endblock %}
 
+<!-- Add Font Awesome for icons if needed -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}

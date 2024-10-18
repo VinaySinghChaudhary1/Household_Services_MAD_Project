@@ -979,6 +979,22 @@ def view_reviews(service_request_id):
     return render_template('reviews/view_reviews.html', reviews=reviews)
 
 
+@app.route('/reply_to_review/<int:review_id>', methods=['POST'])
+def reply_to_review(review_id):
+    review = Review.query.get_or_404(review_id)
+
+    # Check if the logged-in user is allowed to reply (must be the supplier or an admin)
+    if session.get('role') not in ['supplier', 'admin'] or (session.get('role') == 'supplier' and session.get('user_id') != review.supplier_id):
+        flash('You are not authorized to reply to this review.', 'danger')
+        return redirect(url_for('view_reviews', service_request_id=review.service_request_id))
+
+    # Save the reply
+    review.reply = request.form.get('reply')
+    db.session.commit()
+
+    flash('Your reply has been submitted!', 'success')
+    return redirect(url_for('view_reviews', service_request_id=review.service_request_id))
+
 
 # -- Order Details --
 @app.route('/order_details/<int:service_request_id>')

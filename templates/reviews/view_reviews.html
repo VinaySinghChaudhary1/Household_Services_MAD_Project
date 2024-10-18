@@ -24,11 +24,32 @@
                                 {% endfor %}
                                 <span class="ms-2">{{ review.rating }} / 5</span>
                             </h5>
+
                             <!-- Comment Box -->
                             <div class="bg-light p-3 rounded mt-3">
                                 <p class="mb-0"><strong>Comment:</strong></p>
                                 <p class="mb-0">{{ review.comment }}</p>
                             </div>
+
+                            <!-- Display Reply if available -->
+                            {% if review.reply %}
+                            <div  class="bg-light p-3 rounded mt-3">
+                                <p class="mb-0"><strong>Reply:</strong></p>
+                                <p class="mb-0">{{ review.reply }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Reply Form (Visible for Supplier/Admin) -->
+                            {% if session.get('role') in ['supplier', 'admin'] %}
+                                <form action="{{ url_for('reply_to_review', review_id=review.review_id) }}" method="POST" class="mt-3">
+                                    <div class="mb-3">
+                                        <label for="reply" class="form-label">Reply to Customer</label>
+                                        <textarea class="form-control" id="reply" name="reply" rows="3" placeholder="Enter your reply here...">{{ review.reply }}</textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit Reply</button>
+                                </form>
+                            {% endif %}
+                            
                             <footer class="blockquote-footer mt-3">
                                 Reviewed by <cite title="Customer">{{ review.customer.full_name }}</cite>
                                 on {{ review.created_at.strftime('%Y-%m-%d') }}
@@ -43,19 +64,18 @@
     {% endif %}
 </div>
 
-    <!-- Go Back Button -->
-    <div class="mt-3 text-start">
-        {% if session.get('role') == 'supplier' %}
-            <a href="{{ url_for('supplier_dashboard') }}" class="btn btn-secondary">Go Back to Supplier Dashboard</a>
-        {% elif session.get('role') == 'customer' %}
-            <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Go Back to Customer Dashboard</a>
-        {% elif session.get('role') == 'admin' %}
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Go Back to Admin Dashboard</a>
-        {% endif %}
-    </div>
-
-
-
+<!-- Go Back Button -->
+<div class="mt-3 text-start">
+    {% if session.get('role') == 'supplier' %}
+        <a href="{{ url_for('supplier_dashboard') }}" class="btn btn-secondary">Go Back to Supplier Dashboard</a>
+    {% elif session.get('role') == 'customer' %}
+        <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Go Back to Customer Dashboard</a>
+    {% elif session.get('role') == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Go Back to Admin Dashboard</a>
+    {% endif %}
+    
+</div>
+<br>
 <!-- Add Font Awesome for star icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}
