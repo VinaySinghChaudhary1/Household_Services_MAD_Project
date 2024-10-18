@@ -11,6 +11,7 @@ Admin Summary
             <h2>Admin Summary</h2>
         </div>
         <div class="card-body">
+            <!-- Textual Summaries for Total Requests and Average Rating -->
             <div class="row mb-4">
                 <div class="col-md-6">
                     <p class="fw-bold">Total Service Requests on Platform: <span class="text-primary">{{ total_requests }}</span></p>
@@ -19,6 +20,8 @@ Admin Summary
                     <p class="fw-bold">Overall Average Rating for All Suppliers: <span class="text-success">{{ avg_rating }}</span></p>
                 </div>
             </div>
+
+            <!-- Textual Summaries for Service Request Status and User Summary -->
             <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="card bg-light border-0 shadow-sm">
@@ -46,8 +49,112 @@ Admin Summary
                     </div>
                 </div>
             </div>
-            <!-- Add a statistical chart here using a chart library like Chart.js -->
+
+            <!-- Chart Section Starts Below -->
+            <div class="row mt-5">
+                <!-- Service Requests Status Bar Chart -->
+                <div class="col-md-6 mb-4">
+                    <div class="card bg-light border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Service Requests Status (Chart)</h5>
+                            <canvas id="serviceStatusChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Summary Pie Chart -->
+                <div class="col-md-6 mb-4">
+                    <div class="card bg-light border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">User Summary (Chart)</h5>
+                            <canvas id="userSummaryChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Chart for Overall All Supplier Rating Below Other Charts -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card bg-light border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Overall Average Rating for All Suppliers (Chart)</h5>
+                            <canvas id="ratingChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Bar Chart for Service Requests Status
+    var serviceStatusCtx = document.getElementById('serviceStatusChart').getContext('2d');
+    var serviceStatusChart = new Chart(serviceStatusCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Pending', 'Accepted', 'Rejected', 'Completed', 'Returned'],
+            datasets: [{
+                label: 'Service Requests',
+                data: [{{ pending_count | tojson }}, {{ accepted_count | tojson }}, {{ rejected_count | tojson }}, {{ completed_count | tojson }}, {{ returned_count | tojson }}],
+                backgroundColor: ['#ffc107', '#17a2b8', '#dc3545', '#28a745', '#6c757d'],
+                borderColor: ['#e0a800', '#138496', '#c82333', '#218838', '#5a6268'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Pie Chart for User Summary
+    var userSummaryCtx = document.getElementById('userSummaryChart').getContext('2d');
+    var userSummaryChart = new Chart(userSummaryCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Customers', 'Suppliers'],
+            datasets: [{
+                label: 'User Distribution',
+                data: [{{ customer_count | tojson }}, {{ supplier_count | tojson }}],
+                backgroundColor: ['#007bff', '#28a745'],
+                hoverOffset: 4
+            }]
+        }
+    });
+    
+    // Line Chart for Overall Average Rating
+    var ratingCtx = document.getElementById('ratingChart').getContext('2d');
+    var ratingChart = new Chart(ratingCtx, {
+        type: 'line',
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June'], // Example months, can be dynamic
+            datasets: [{
+                label: 'Average Rating',
+                data: [4.2, 4.4, 4.6, 4.3, 4.5, {{ avg_rating | tojson }}], // Use your dynamic avg_rating here
+                borderColor: '#17a2b8',
+                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 5
+                }
+            }
+        }
+    });
+</script>
+    
+
 {% endblock %}

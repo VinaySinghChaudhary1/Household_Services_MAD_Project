@@ -3,6 +3,7 @@ from flask_session import Session   # for session
 from werkzeug.security import check_password_hash, generate_password_hash # for hashing
 from werkzeug.utils import secure_filename     # for uploading
 from datetime import datetime    # for Datetime
+from collections import defaultdict  # for defaultdict
 import os  # for path
 from db import db    # for db
 from model import User, Category, Service, ServiceRequest, Review       # for models
@@ -934,6 +935,9 @@ def leave_review(service_request_id):
         flash('You are not authorized to leave a review for this service.', 'danger')
         return redirect(url_for('customer_dashboard'))
 
+    # Fetch the review history for this service request
+    review_history = Review.query.filter_by(service_request_id=service_request_id, customer_id=session.get('user_id')).all()
+
     if request.method == 'POST':
         rating = int(request.form.get('rating'))
         comment = request.form.get('comment')
@@ -941,7 +945,7 @@ def leave_review(service_request_id):
         # Create the review and store it in the database
         new_review = Review(
             service_id=service_request.service_id,
-            service_request_id=service_request_id,  # Add service_request_id to the review
+            service_request_id=service_request_id,
             customer_id=service_request.user_id,
             supplier_id=service_request.service.supplier_id,
             rating=rating,
@@ -953,7 +957,10 @@ def leave_review(service_request_id):
         flash('Your review has been submitted!', 'success')
         return redirect(url_for('customer_dashboard'))
 
-    return render_template('reviews/leave_review.html', service_request=service_request)
+    return render_template('reviews/leave_review.html', 
+                           service_request=service_request, 
+                           review_history=review_history)
+
 
 @app.route('/reviews/<int:service_request_id>', methods=['GET'])
 def view_reviews(service_request_id):
@@ -1037,7 +1044,6 @@ def supplier_summary(user_id):
                            completed_count=completed_count,
                            returned_count=returned_count,
                            avg_rating=avg_rating)
-
 
 @app.route('/summary/admin')
 def admin_summary():

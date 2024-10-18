@@ -11,11 +11,14 @@ Customer Summary
             <h2>Customer Summary</h2>
         </div>
         <div class="card-body">
-            <div class="row">
+            <!-- Textual Summary for Total Service Requests -->
+            <div class="row mb-4">
                 <div class="col-md-12">
                     <div class="card bg-light border-0 shadow-sm">
                         <div class="card-body">
-                            <h5 class="card-title">Total Service Requests: <span class="text-primary">{{ service_requests|length }}</span></h5>
+                            <h5 class="card-title">Total Service Requests: 
+                                <span class="text-primary">{{ service_requests|length }}</span>
+                            </h5>
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">Pending: <span class="badge bg-warning">{{ pending_count }}</span></li>
                                 <li class="list-group-item">Accepted: <span class="badge bg-info">{{ accepted_count }}</span></li>
@@ -27,8 +30,49 @@ Customer Summary
                     </div>
                 </div>
             </div>
-            <!-- Add a statistical chart here using a chart library like Chart.js -->
+
+            <!-- Chart Section Starts Below -->
+            <div class="row mt-5">
+                <!-- Bar Chart for Service Requests Status -->
+                <div class="col-md-12 mb-4">
+                    <div class="card bg-light border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Service Requests Status (Chart)</h5>
+                            <canvas id="serviceStatusChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Bar Chart for Service Requests Status
+var serviceStatusCtx = document.getElementById('serviceStatusChart').getContext('2d');
+var serviceStatusChart = new Chart(serviceStatusCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Pending', 'Accepted', 'Rejected', 'Completed', 'Returned'],
+        datasets: [{
+            label: 'Service Requests',
+            data: [{{ pending_count }}, {{ accepted_count }}, {{ rejected_count }}, {{ completed_count }}, {{ returned_count }}],
+            backgroundColor: ['#ffc107', '#17a2b8', '#dc3545', '#28a745', '#6c757d'],
+            borderColor: ['#e0a800', '#138496', '#c82333', '#218838', '#5a6268'],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+
 {% endblock %}

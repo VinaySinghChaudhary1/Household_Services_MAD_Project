@@ -26,5 +26,24 @@
         <button type="submit" class="btn btn-primary">Submit Review</button>
         <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary">Cancel</a>
     </form>
+
+    <!-- Review History Section -->
+    {% if review_history %}
+    <div class="mt-5">
+        <h3>Review History for {{ service_request.service.service_name }}</h3>
+        <ul class="list-group">
+            {% for review in review_history %}
+            <li class="list-group-item">
+                <p><strong>Rating:</strong> {{ review.rating }}</p>
+                <p><strong>Comment:</strong> {{ review.comment or 'No comment provided' }}</p>
+                <p><small><strong>Date:</strong> {{ review.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+            </li>
+            {% else %}
+            <li class="list-group-item text-center">No previous reviews found.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
+
