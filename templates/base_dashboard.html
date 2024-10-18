@@ -91,14 +91,14 @@
                         <a class="btn btn-outline-light ms-2" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-outline-light ms-2" href="/category/category_dashboard.html">Category</a>
+                        <a class="btn btn-outline-light ms-2" href="{{ url_for('category_dashboard') }}">Category</a>
                     </li>
                 
                     <!-- Display the username next to the Category button if the user is logged in -->
                     {% if session.get('username') %} 
                     <li class="nav-item">
                         <span class="btn ms-2" style="background-color: yellow; color: black;">
-                            Session User = {{ session.get('username') }}
+                            Session User = {{ session.get('username') }} ({{ session.get('role') }})
                         </span>
                     </li>
                     {% endif %}

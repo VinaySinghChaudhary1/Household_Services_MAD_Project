@@ -22,14 +22,18 @@ db.init_app(app)
 app.app_context().push()
 
 # -- Login Required Decorator --
-def login_required(role):
+def login_required(roles):
     def wrapper(original):
         @wraps(original)
-        def inner(*args, **kwargs):  # *args = list of arguments, **kwargs = key word arguments 
-            if session.get("username") and session.get("role") == role:
+        def inner(*args, **kwargs):
+            # Convert the roles argument to a list by splitting the string by commas
+            role_list = roles.split(', ')
+            
+            # Check if the session has a valid user and if the user's role is in the allowed roles
+            if session.get("username") and session.get("role") in role_list:
                 return original(*args, **kwargs)
             else:
-                flash(f"You need to login as {role}", "warning")
+                flash(f"You need to login as one of the following roles: {', '.join(role_list)}", "warning")
                 return redirect(url_for("login"))
 
         return inner
@@ -64,12 +68,12 @@ def contact():
 
 # -- Base Pages --
 @app.route('/base')
-@login_required(role="admin") # Add this line to ensure admin as decorator
+@login_required("admin") # Add this line to ensure admin as decorator
 def base():
     return render_template('base_users.html')
 
 @app.route('/base_dashboard')
-@login_required(role="admin")
+@login_required("admin")
 def base_dashboard():
     return render_template('base_dashboard.html')
 
@@ -277,8 +281,6 @@ def register_supplier():
     # For GET request, render the registration page with existing categories
     return render_template('users/register_supplier.html', categories=categories)
 
-
-
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     # Clear the session data to log out the user
@@ -342,7 +344,7 @@ def search():
 
 # -- Users Dashboards --
 @app.route('/customer_dashboard', methods=['GET'])
-@login_required(role="customer")
+@login_required("customer")
 def customer_dashboard():
     user_id = session.get('user_id')
     
@@ -357,7 +359,7 @@ def customer_dashboard():
                            history_requests=history_requests)
 
 @app.route('/supplier_dashboard', methods=['GET'])
-@login_required(role="supplier")
+@login_required("supplier")
 def supplier_dashboard():
     user_id = session.get('user_id')
     
@@ -381,7 +383,7 @@ def supplier_dashboard():
                            history_requests=history_requests)
 
 @app.route('/admin_dashboard', methods=['GET'])
-@login_required(role="admin")
+@login_required("admin")
 def admin_dashboard():
     # Fetch ongoing service requests (pending and accepted)
     service_requests = ServiceRequest.query.filter(
@@ -402,6 +404,7 @@ def admin_dashboard():
 
 # -- Profile - Edit, Delete --
 @app.route('/profile/<int:user_id>', methods=['GET'])
+@login_required("admin, supplier, customer")
 def profile(user_id):
     # Fetch the user by user_id
     user = User.query.get_or_404(user_id)
@@ -413,6 +416,7 @@ def profile(user_id):
     return render_template('profile/profile.html', user=user)
 
 @app.route('/edit_profile/<int:user_id>/', methods=['GET', 'POST'])
+@login_required("admin, supplier, customer")
 def edit_profile(user_id):
     user = User.query.get_or_404(user_id)
     
@@ -452,6 +456,7 @@ def edit_profile(user_id):
     return render_template('profile/edit_profile.html', user=user)
 
 @app.route('/delete_profile/<int:user_id>/', methods=['GET', 'POST'])
+@login_required("admin, supplier, customer")
 def delete_profile(user_id):
     user = User.query.get_or_404(user_id)
 
@@ -485,7 +490,7 @@ def delete_profile(user_id):
 
 # -- Admin - approval, block, unblock --
 @app.route('/admin/members')
-@login_required(role="admin")
+@login_required("admin")
 def member_list():
     customers = User.query.filter_by(role='customer').all()
     suppliers = User.query.filter_by(role='supplier').all()
@@ -493,7 +498,7 @@ def member_list():
     return render_template('admin/member_list.html', customers=customers, suppliers=suppliers, waiting_approval=waiting_approval)
 
 @app.route('/admin/verify_supplier/<int:user_id>', methods=['POST'])
-@login_required(role="admin")
+@login_required("admin")
 def verify_supplier(user_id):
     supplier = User.query.get_or_404(user_id)
 
@@ -518,10 +523,8 @@ def verify_supplier(user_id):
     
     return redirect(url_for('member_list'))
 
-
-
 @app.route('/admin/block_user/<int:user_id>', methods=['POST', 'GET'])
-@login_required(role="admin")
+@login_required("admin")
 def block_user(user_id):
     user = User.query.get_or_404(user_id)
     # Toggle the blocked status
@@ -539,7 +542,7 @@ def block_user(user_id):
         return redirect(url_for('member_list'))
 
 @app.route('/admin/unblock_user/<int:user_id>', methods=['POST', 'GET'])
-@login_required(role="admin")
+@login_required("admin")
 def unblock_user(user_id):
     user = User.query.get_or_404(user_id)
     # Set the blocked status to False (unblock the user)
@@ -559,7 +562,7 @@ def unblock_user(user_id):
 
 
 # -- Manage Categories (Dashboard, Create, Edit, Delete) --
-@app.route('/category/category_dashboard.html', methods=['GET'])
+@app.route('/category_dashboard', methods=['GET'])
 def category_dashboard():
     # Fetch all categories
     categories = Category.query.all()
@@ -754,7 +757,6 @@ def create_service(category_id):
 
     return render_template('service/create_service.html', category_id=category_id)
 
-
 @app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
 def edit_service(service_id):
     # Fetch the service
@@ -791,7 +793,6 @@ def edit_service(service_id):
         return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/edit_service.html', service=service)
-
 
 @app.route('/confirm_delete_service/<int:service_id>', methods=['GET', 'POST'])
 def confirm_delete_service(service_id):
@@ -833,6 +834,7 @@ def confirm_delete_service(service_id):
 
 # -- Service Requests (Dashboard, Create, Edit, Delete) --
 @app.route('/service_requests', methods=['GET'])
+@login_required("admin, supplier, customer")
 def view_service_requests():
     user_id = session.get('user_id')
     role = session.get('role')
@@ -851,6 +853,7 @@ def view_service_requests():
     return render_template('service_requests/service_requests.html', service_requests=service_requests, service_history=service_history)
 
 @app.route('/service_requests/create/<int:service_id>', methods=['GET', 'POST'])
+@login_required("admin, supplier, customer")
 def create_service_request(service_id):
     # Check if the user is logged in
     if 'user_id' not in session:
@@ -887,6 +890,7 @@ def create_service_request(service_id):
     return render_template('service_requests/create_service_request.html', service_id=service_id, service=service)
 
 @app.route('/service_requests/update/<int:service_request_id>', methods=['GET', 'POST'])
+@login_required("admin, supplier, customer")
 def update_service_request(service_request_id):
     service_request = ServiceRequest.query.get_or_404(service_request_id)
     
@@ -910,6 +914,7 @@ def update_service_request(service_request_id):
     return render_template('service_requests/update_service_request.html', service_request=service_request)
 
 @app.route('/service_requests/delete/<int:service_request_id>', methods=['GET', 'POST'])
+@login_required("admin, supplier, customer")
 def delete_service_request(service_request_id):
     service_request = ServiceRequest.query.get_or_404(service_request_id)
 
@@ -927,6 +932,7 @@ def delete_service_request(service_request_id):
 
 # -- Reviews (Leave Review) --
 @app.route('/leave_review/<int:service_request_id>', methods=['GET', 'POST'])
+@login_required("admin,customer")
 def leave_review(service_request_id):
     service_request = ServiceRequest.query.get_or_404(service_request_id)
 
@@ -961,8 +967,8 @@ def leave_review(service_request_id):
                            service_request=service_request, 
                            review_history=review_history)
 
-
 @app.route('/reviews/<int:service_request_id>', methods=['GET'])
+@login_required("admin, supplier")
 def view_reviews(service_request_id):
     # Fetch all reviews for the given service request
     reviews = Review.query.filter_by(service_request_id=service_request_id).all()
@@ -978,8 +984,8 @@ def view_reviews(service_request_id):
 
     return render_template('reviews/view_reviews.html', reviews=reviews)
 
-
 @app.route('/reply_to_review/<int:review_id>', methods=['POST'])
+@login_required("admin, supplier")
 def reply_to_review(review_id):
     review = Review.query.get_or_404(review_id)
 
@@ -996,8 +1002,10 @@ def reply_to_review(review_id):
     return redirect(url_for('view_reviews', service_request_id=review.service_request_id))
 
 
+
 # -- Order Details --
 @app.route('/order_details/<int:service_request_id>')
+@login_required("admin, supplier, customer")
 def order_details(service_request_id):
     service_request = ServiceRequest.query.get_or_404(service_request_id)
     return render_template('service_requests/order_details.html', service_request=service_request)
@@ -1007,6 +1015,7 @@ def order_details(service_request_id):
 # -- Summary -- customer, admin, supplier
 
 @app.route('/summary/customer/<int:user_id>')
+@login_required("admin, customer")
 def customer_summary(user_id):
     # Check if the logged-in user is an admin
     if session.get('role') != 'admin' and session.get('user_id') != user_id:
@@ -1031,6 +1040,7 @@ def customer_summary(user_id):
                            returned_count=returned_count)
 
 @app.route('/summary/supplier/<int:user_id>')
+@login_required("admin, supplier, customer")
 def supplier_summary(user_id):
     # Check if the logged-in user is an admin
     if session.get('role') != 'admin' and session.get('role') != 'supplier':
@@ -1062,6 +1072,7 @@ def supplier_summary(user_id):
                            avg_rating=avg_rating)
 
 @app.route('/summary/admin')
+@login_required("admin")
 def admin_summary():
     if session.get('role') != 'admin':
         flash("Unauthorized access to the admin summary.", "danger")

@@ -7,7 +7,7 @@ Category Dashboard
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Welcome to Category Dashboard, {{ current_user.full_name }}</h1>
+        <h3>Welcome to Category Dashboard, "{{ current_user.full_name }}"</h3>
         {% if session.get('role') == 'admin' %}
         <a href="{{ url_for('create_category') }}" class="btn btn-primary">Add New Category</a>
         {% endif %}
