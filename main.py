@@ -701,9 +701,21 @@ def service_dashboard(category_id):
     if not category:
         flash('The requested category does not exist.', 'warning')
         return redirect(url_for('category_dashboard'))  # Redirect to home if category doesn't exist
+
     # Fetch services for the given category
     services = Service.query.filter_by(category_id=category_id).all()
+
+    # Calculate the average rating for each supplier
+    for service in services:
+        reviews = Review.query.filter_by(supplier_id=service.supplier_id).all()
+        if reviews:
+            avg_rating = sum(review.rating for review in reviews) / len(reviews)
+        else:
+            avg_rating = 0  # No reviews, default to 0
+        service.supplier.avg_rating = round(avg_rating, 1)  # Assign avg_rating to supplier dynamically
+
     return render_template('service/service_dashboard.html', services=services, category=category)
+
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
 def create_service(category_id):
@@ -932,7 +944,7 @@ def delete_service_request(service_request_id):
 
 # -- Reviews (Leave Review) --
 @app.route('/leave_review/<int:service_request_id>', methods=['GET', 'POST'])
-@login_required("admin,customer")
+@login_required("admin, supplier, customer")
 def leave_review(service_request_id):
     service_request = ServiceRequest.query.get_or_404(service_request_id)
 
@@ -968,7 +980,7 @@ def leave_review(service_request_id):
                            review_history=review_history)
 
 @app.route('/reviews/<int:service_request_id>', methods=['GET'])
-@login_required("admin, supplier")
+@login_required("admin, supplier, customer")
 def view_reviews(service_request_id):
     # Fetch all reviews for the given service request
     reviews = Review.query.filter_by(service_request_id=service_request_id).all()
@@ -985,7 +997,7 @@ def view_reviews(service_request_id):
     return render_template('reviews/view_reviews.html', reviews=reviews)
 
 @app.route('/reply_to_review/<int:review_id>', methods=['POST'])
-@login_required("admin, supplier")
+@login_required("admin, supplier, customer")
 def reply_to_review(review_id):
     review = Review.query.get_or_404(review_id)
 

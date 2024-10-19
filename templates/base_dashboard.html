@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <title>{% block title %}Dashboard{% endblock %}</title>
     <style>
         .navbar-brand {
@@ -98,7 +100,7 @@
                     {% if session.get('username') %} 
                     <li class="nav-item">
                         <span class="btn ms-2" style="background-color: yellow; color: black;">
-                            Session User = {{ session.get('username') }} ({{ session.get('role') }})
+                            {{ session.get('username') }} ({{ session.get('role') }})
                         </span>
                     </li>
                     {% endif %}
@@ -122,9 +124,18 @@
                             <ul class="dropdown-menu" aria-labelledby="accountDropdown">
                                 <li><a class="dropdown-item" href="{{ url_for('profile', user_id=session.get('user_id')) }}">Profile</a></li>
                                 <li><a class="dropdown-item" href="{% if session.get('role') == 'supplier' %}{{ url_for('supplier_dashboard') }}{% elif session.get('role') == 'customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'admin' %}{{ url_for('admin_dashboard') }}{% endif %}">Dashboard</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- More Dropdown Menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="moreDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                More
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="moreDropdown">
                                 <li><a class="dropdown-item" href="{{ url_for('view_service_requests') }}">Service Requests</a></li>
 
-                                <!-- Summary Link Updated -->
                                 <li>
                                     <a class="dropdown-item" href="
                                         {% if session.get('role') == 'supplier' %}
@@ -139,12 +150,13 @@
                                     </a>
                                 </li>
 
-                                <!-- Member List Link Updated -->
+                                <!-- Member List Link Only for Admin -->
                                 {% if session.get('role') == 'admin' %}
                                     <li><a class="dropdown-item" href="{{ url_for('member_list') }}">Member List</a></li>
                                 {% endif %}
                             </ul>
                         </li>
+
                         <li class="nav-item">
                             <form action="{{ url_for('logout') }}" method="POST" class="d-inline">
                                 <button type="submit" class="btn btn-outline-danger">Logout</button>
@@ -180,7 +192,6 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
 
-    
 </body>
 
 </html>
