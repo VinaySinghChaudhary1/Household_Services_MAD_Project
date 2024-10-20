@@ -14,9 +14,12 @@ class User(db.Model):
     address = db.Column(db.String, nullable=False)
     pincode = db.Column(db.String, nullable=False)
     role = db.Column(db.String, nullable=False)  # 'customer' or 'supplier'
-    service_name = db.Column(db.String, nullable=False)  # Only applicable if the user is a supplier
-    experience_years = db.Column(db.Integer)  # Only applicable if the user is a supplier
-    document = db.Column(db.String)  # Path or name of the uploaded document, only for suppliers
+
+    # Fields specific to suppliers, make them nullable
+    service_name = db.Column(db.String, nullable=True)  # Nullable for customers
+    experience_years = db.Column(db.Integer, nullable=True)  # Nullable for customers
+    document = db.Column(db.String, nullable=True)  # Nullable for customers
+
     is_verified = db.Column(db.Boolean, default=False)  # For supplier verification
     is_blocked = db.Column(db.Boolean, default=False)  # For blocking/unblocking users
 
@@ -33,6 +36,7 @@ class User(db.Model):
         self.document = document
         self.is_verified = False  # New suppliers are not verified by default
         self.is_blocked = False  # New users are not blocked by default
+
 
 
 class Category(db.Model):
@@ -76,10 +80,11 @@ class Service(db.Model):
 
 
 
+
 class ServiceRequest(db.Model):
     __tablename__ = "service_requests"
     service_request_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.service_id'), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.service_id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     supplier_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)  # Link to supplier (optional)
     service_description = db.Column(db.String, nullable=False)

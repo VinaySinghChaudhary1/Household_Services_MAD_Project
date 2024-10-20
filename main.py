@@ -150,38 +150,44 @@ def login():
 @app.route('/register_customer', methods=['GET', 'POST'])
 def register_customer():
     if request.method == 'POST':
-        # Retrieve form data
-        full_name = request.form.get('fullname')
-        username = request.form.get('username')
-        email = request.form.get('email')
-        address = request.form.get('address')
-        pincode = request.form.get('pincode')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        # Validation checks for password mismatch
-        if password != confirm_password:
-            flash("Passwords do not match. Please try again.", "warning")
-            return redirect(url_for('register_customer'))
-
-        # Check if email or username already exists in the database
-        existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
-        if existing_user:
-            flash("Email or username already exists. Please choose another one.", "danger")
-            return redirect(url_for('register_customer'))
-
         try:
+            # Retrieve form data
+            full_name = request.form.get('fullname')
+            username = request.form.get('username')
+            email = request.form.get('email')
+            address = request.form.get('address')
+            pincode = request.form.get('pincode')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+
+            # Debug print statements for form data
+            # print(f"Full name: {full_name}, Username: {username}, Email: {email}, Address: {address}, Pincode: {pincode}")
+
+            # Validation checks
+            if password != confirm_password:
+                flash("Passwords do not match. Please try again.", "warning")
+                return redirect(url_for('register_customer'))
+
+            # Check if email or username already exists in the database
+            existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
+            if existing_user:
+                flash("Email or username already exists. Please choose another one.", "danger")
+                return redirect(url_for('register_customer'))
+
+            # Hash the password
+            hashed_password = generate_password_hash(password)
+
             # Create a new customer user instance
             new_customer = User(
                 full_name=full_name,
                 username=username,
                 email=email,
-                password=generate_password_hash(password),  # Remember to hash the password
+                password=hashed_password,  # Hashed password
                 address=address,
                 pincode=pincode,
-                role="customer"
+                role="customer"  # Role is set to 'customer'
             )
-            
+
             # Add new customer to the database
             db.session.add(new_customer)
             db.session.commit()
@@ -190,11 +196,19 @@ def register_customer():
             return redirect(url_for('login'))
 
         except Exception as e:
+            # Log the error for debugging
+            print(f"Error during registration: {e}")
             flash("An error occurred during registration. Please try again.", "danger")
             return redirect(url_for('register_customer'))
 
     # For GET request, render the registration page
     return render_template('users/register_customer.html')
+
+
+
+
+
+
 
 @app.route('/register_supplier', methods=['GET', 'POST'])
 def register_supplier():
@@ -693,6 +707,7 @@ def delete_category(category_id):
 
 
 
+
 # -- Manage Services (Dashboard, Create, Edit, Delete) --
 @app.route('/service_dashboard/<int:category_id>', methods=['GET'])
 def service_dashboard(category_id):
@@ -700,7 +715,7 @@ def service_dashboard(category_id):
     category = Category.query.get(category_id)
     if not category:
         flash('The requested category does not exist.', 'warning')
-        return redirect(url_for('category_dashboard'))  # Redirect to home if category doesn't exist
+        return redirect(url_for('category_dashboard'))  # Redirect to category dashboard if category doesn't exist
 
     # Fetch services for the given category
     services = Service.query.filter_by(category_id=category_id).all()
@@ -715,7 +730,6 @@ def service_dashboard(category_id):
         service.supplier.avg_rating = round(avg_rating, 1)  # Assign avg_rating to supplier dynamically
 
     return render_template('service/service_dashboard.html', services=services, category=category)
-
 
 @app.route('/create_service/<int:category_id>', methods=['GET', 'POST'])
 def create_service(category_id):
@@ -839,6 +853,8 @@ def confirm_delete_service(service_id):
             return redirect(url_for('service_dashboard', category_id=service.category_id))
 
     return render_template('service/delete_service.html', service=service)
+
+
 
 
 
