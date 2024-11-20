@@ -42,10 +42,12 @@ Service Requests
                                 {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
                             {% elif request.status == 'rejected' %}
                                 {{ request.date_rejected.strftime('%Y-%m-%d') if request.date_rejected else 'N/A' }}
+                            {% elif request.status == 'cancelled' %}
+                                {{ request.date_cancelled.strftime('%Y-%m-%d') if request.date_cancelled else 'N/A' }}
                             {% else %}
                                 N/A
                             {% endif %}
-                        </td>
+                        </td>                        
                         <td>
                             <div class="d-flex flex-column">
                                 {% if session.get('role') == 'supplier' or session.get('role') == 'admin' %}
@@ -61,8 +63,17 @@ Service Requests
                                 {% endif %}
 
                                 {% if session.get('role') == 'admin' or (session.get('role') == 'customer' and session.get('user_id') == request.user_id) %}
-                                    <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this service request?');">
-                                        <button type="submit" class="btn btn-danger mt-2">Delete</button>
+                                
+                                    <!-- Added Delete button for service request by admin -->
+                                     
+                                    <!-- <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this service request?');">
+                                        <button type="submit" class="btn btn-danger mt-2">Close</button>
+                                    </form> -->
+
+                                    <!-- Added Cancel button for admin and customer -->
+                                    <form action="{{ url_for('update_service_request', service_request_id=request.service_request_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this service request?');" class="mb-2">
+                                        <input type="hidden" name="status" value="cancelled">
+                                        <button type="submit" class="btn btn-danger mt-2">Cancel</button>
                                     </form>
                                 {% endif %}
                             </div>

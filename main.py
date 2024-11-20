@@ -205,11 +205,6 @@ def register_customer():
     return render_template('users/register_customer.html')
 
 
-
-
-
-
-
 @app.route('/register_supplier', methods=['GET', 'POST'])
 def register_supplier():
     # Fetch all existing categories for the dropdown
@@ -365,8 +360,8 @@ def customer_dashboard():
     # Fetch ongoing service requests (pending and accepted)
     service_requests = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
 
-    # Fetch service history (completed or returned)
-    history_requests = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected'])).all()
+    # Fetch service history (completed, rejected, returned, and cancelled)
+    history_requests = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected', 'cancelled'])).all()
 
     return render_template('dashboard/customer_dashboard.html', 
                            service_requests=service_requests, 
@@ -386,10 +381,10 @@ def supplier_dashboard():
         ServiceRequest.status.in_(['pending', 'accepted'])
     ).all()
     
-    # Fetch service history (completed, returned, and rejected)
+    # Fetch service history (completed, returned, rejected, and cancelled)
     history_requests = ServiceRequest.query.filter(
         ServiceRequest.service_id.in_([service.service_id for service in services]),
-        ServiceRequest.status.in_(['completed', 'returned', 'rejected'])
+        ServiceRequest.status.in_(['completed', 'returned', 'rejected', 'cancelled'])
     ).all()
 
     return render_template('dashboard/supplier_dashboard.html', 
@@ -404,9 +399,9 @@ def admin_dashboard():
         ServiceRequest.status.in_(['pending', 'accepted'])
     ).all()
     
-    # Fetch service history (completed, returned, and rejected)
+    # Fetch service history (completed, returned, rejected and cancelled)
     history_requests = ServiceRequest.query.filter(
-        ServiceRequest.status.in_(['completed', 'returned', 'rejected'])
+        ServiceRequest.status.in_(['completed', 'returned', 'rejected', 'cancelled'])
     ).all()
 
     return render_template('dashboard/admin_dashboard.html', 
@@ -869,15 +864,15 @@ def view_service_requests():
     if role == 'customer':
         # Fetch ongoing service requests and service history for the customer
         service_requests = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
-        service_history = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected'])).all()
+        service_history = ServiceRequest.query.filter_by(user_id=user_id).filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected', 'cancelled'])).all()
     elif role == 'supplier':
         # Fetch ongoing service requests and service history for the supplier
         service_requests = ServiceRequest.query.join(Service).filter(Service.supplier_id == user_id).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
-        service_history = ServiceRequest.query.join(Service).filter(Service.supplier_id == user_id).filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected'])).all()
+        service_history = ServiceRequest.query.join(Service).filter(Service.supplier_id == user_id).filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected', 'cancelled'])).all()
     else:
         # Admin view: Fetch all ongoing service requests and service history
         service_requests = ServiceRequest.query.filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
-        service_history = ServiceRequest.query.filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected'])).all()
+        service_history = ServiceRequest.query.filter(ServiceRequest.status.in_(['completed', 'returned', 'rejected', 'cancelled'])).all()
     return render_template('service_requests/service_requests.html', service_requests=service_requests, service_history=service_history)
 
 @app.route('/service_requests/create/<int:service_id>', methods=['GET', 'POST'])
@@ -924,7 +919,7 @@ def update_service_request(service_request_id):
     
     if request.method == 'POST':
         status = request.form['status']
-        if status in ['accepted', 'rejected', 'completed', 'returned']:
+        if status in ['accepted', 'rejected', 'completed', 'returned', 'cancelled']:
             service_request.status = status
             if status == 'accepted':
                 service_request.date_issued = datetime.utcnow()
@@ -932,6 +927,8 @@ def update_service_request(service_request_id):
                 service_request.date_completed = datetime.utcnow()
             elif status == 'returned':
                 service_request.date_returned = datetime.utcnow()
+            elif status == 'cancelled':
+                pass
             db.session.commit()
             flash('Service request updated successfully!', 'success')
         else:
@@ -964,10 +961,11 @@ def delete_service_request(service_request_id):
 def leave_review(service_request_id):
     service_request = ServiceRequest.query.get_or_404(service_request_id)
 
-    # Allow review for completed, returned, or rejected services only
-    if session.get('user_id') != service_request.user_id or service_request.status not in ['completed', 'returned', 'rejected']:
+    # Allow review for completed, returned, rejected and cancelled services only
+    if session.get('user_id') != service_request.user_id or service_request.status.strip().lower() not in ['completed', 'returned', 'rejected', 'cancelled']:
         flash('You are not authorized to leave a review for this service.', 'danger')
         return redirect(url_for('customer_dashboard'))
+
 
     # Fetch the review history for this service request
     review_history = Review.query.filter_by(service_request_id=service_request_id, customer_id=session.get('user_id')).all()
@@ -1057,6 +1055,7 @@ def customer_summary(user_id):
     rejected_count = sum(1 for req in service_requests if req.status == 'rejected')
     completed_count = sum(1 for req in service_requests if req.status == 'completed')
     returned_count = sum(1 for req in service_requests if req.status == 'returned')
+    cancelled_count = sum(1 for req in service_requests if req.status == 'cancelled')  # Added Cancelled Count
 
     # Render the customer summary template
     return render_template('summary/customer_summary.html', 
@@ -1065,7 +1064,8 @@ def customer_summary(user_id):
                            accepted_count=accepted_count,
                            rejected_count=rejected_count,
                            completed_count=completed_count,
-                           returned_count=returned_count)
+                           returned_count=returned_count,
+                           cancelled_count=cancelled_count)  # Pass Cancelled Count
 
 @app.route('/summary/supplier/<int:user_id>')
 @login_required("admin, supplier, customer")
@@ -1084,6 +1084,7 @@ def supplier_summary(user_id):
     rejected_count = sum(1 for req in service_requests if req.status == 'rejected')
     completed_count = sum(1 for req in service_requests if req.status == 'completed')
     returned_count = sum(1 for req in service_requests if req.status == 'returned')
+    cancelled_count = sum(1 for req in service_requests if req.status == 'cancelled')
 
     # Calculate average rating for the supplier
     reviews = Review.query.filter_by(supplier_id=user_id).all()
@@ -1097,6 +1098,7 @@ def supplier_summary(user_id):
                            rejected_count=rejected_count,
                            completed_count=completed_count,
                            returned_count=returned_count,
+                           cancelled_count=cancelled_count,
                            avg_rating=avg_rating)
 
 @app.route('/summary/admin')
@@ -1113,10 +1115,11 @@ def admin_summary():
     rejected_count = ServiceRequest.query.filter_by(status='rejected').count()
     completed_count = ServiceRequest.query.filter_by(status='completed').count()
     returned_count = ServiceRequest.query.filter_by(status='returned').count()
+    cancelled_count = ServiceRequest.query.filter_by(status='cancelled').count()
 
     # Calculate average rating for all suppliers
     reviews = Review.query.all()
-    avg_rating = sum(review.rating for review in reviews) / len(reviews) if reviews else 0
+    avg_rating = round(sum(review.rating for review in reviews) / len(reviews), 1) if reviews else 0
 
     # Fetch counts of customers and suppliers
     customer_count = User.query.filter_by(role='customer').count()
@@ -1131,6 +1134,7 @@ def admin_summary():
                            returned_count=returned_count,
                            avg_rating=avg_rating,
                            customer_count=customer_count,
+                           cancelled_count=cancelled_count,
                            supplier_count=supplier_count)
 
 

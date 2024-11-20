@@ -34,8 +34,8 @@ Customer Dashboard
                         <td>{{ request.date_requested.strftime('%Y-%m-%d') }}</td>
                         <td>{{ request.date_issued.strftime('%Y-%m-%d') if request.date_issued else 'N/A' }}</td>
                         <td>
-                            <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger">Cancel</button>
+                            <form action="{{ url_for('delete_service_request', service_request_id=request.service_request_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this service request? But service is not display in Service History section');" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
                             <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info">Order Details</a>
                         </td>
@@ -71,14 +71,16 @@ Customer Dashboard
                                 {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
                             {% elif request.status == 'rejected' %}
                                 {{ request.date_rejected.strftime('%Y-%m-%d') if request.date_rejected else 'N/A' }}
+                            {% elif request.status == 'cancelled' %}
+                                {{ request.date_cancelled.strftime('%Y-%m-%d') if request.date_cancelled else 'N/A' }}
                             {% else %}
                                 N/A
                             {% endif %}
-                        </td>
+                        </td>                        
                         <td>
                             <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info">Order Details</a>
                             <!-- Leave a Review button, visible for completed, returned, and rejected services -->
-                            {% if request.status in ['completed', 'returned', 'rejected'] %}
+                            {% if request.status in ['completed', 'returned', 'rejected', 'cancelled'] %}
                                 <a href="{{ url_for('leave_review', service_request_id=request.service_request_id) }}" class="btn btn-success mt-0">Add Review</a>
                             {% endif %}
                         </td>

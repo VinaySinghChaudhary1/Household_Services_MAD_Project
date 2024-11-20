@@ -84,14 +84,16 @@ Supplier Dashboard
                                 {{ request.date_returned.strftime('%Y-%m-%d') if request.date_returned else 'N/A' }}
                             {% elif request.status == 'rejected' %}
                                 {{ request.date_rejected.strftime('%Y-%m-%d') if request.date_rejected else 'N/A' }}
+                            {% elif request.status == 'cancelled' %}
+                                {{ request.date_cancelled.strftime('%Y-%m-%d') if request.date_cancelled else 'N/A' }}
                             {% else %}
                                 N/A
                             {% endif %}
-                        </td>
+                        </td>                        
                         <td>
                             <a href="{{ url_for('order_details', service_request_id=request.service_request_id) }}" class="btn btn-info">Order Details</a>
                             <!-- View Reviews button -->
-                            {% if request.status in ['completed', 'returned', 'rejected'] %}
+                            {% if request.status in ['completed', 'returned', 'rejected', 'cancelled'] %}
                                 <a href="{{ url_for('view_reviews', service_request_id=request.service_request_id) }}" class="btn btn-secondary">View Reviews</a>
                             {% endif %}
                         </td>
