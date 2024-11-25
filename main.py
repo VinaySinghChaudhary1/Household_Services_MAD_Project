@@ -6,7 +6,7 @@ from datetime import datetime    # for Datetime
 from collections import defaultdict  # for defaultdict
 import os  # for path
 from db import db    # for db
-from model import User, Category, Service, ServiceRequest, Review       # for models
+from model import User, Category, Service, ServiceRequest, Review , ContactMessage     # for models
 from functools import wraps  # for login_required
 
 
@@ -60,9 +60,40 @@ def home():
 def about():
     return render_template('about.html')
 
-@app.route('/contact')
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    return render_template('contact.html')
+    if request.method == 'POST':
+        # Get form data
+        name = request.form.get('name')
+        email = request.form.get('email')
+        message = request.form.get('message')
+
+        # Validate form data
+        if not name or not email or not message:
+            flash("All fields are required!", "danger")
+            return redirect(url_for('contact'))
+
+        # Save message to the database
+        contact_message = ContactMessage(name=name, email=email, message=message)
+        db.session.add(contact_message)
+        db.session.commit()
+
+        flash("Your message has been submitted successfully!", "success")
+        return redirect(url_for('contact'))
+
+    # Render the contact page template
+    return render_template('contact/contact.html')
+
+@app.route('/admin/contact_messages', methods=['GET'])
+@login_required("admin")
+def view_contact_messages():
+    if session.get('role') != 'admin':
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('login'))
+
+    # Fetch all messages from the database
+    messages = ContactMessage.query.order_by(ContactMessage.submitted_at.desc()).all()
+    return render_template('contact/view_contact_messages.html', messages=messages)
 
 
 

@@ -38,7 +38,6 @@ class User(db.Model):
         self.is_blocked = False  # New users are not blocked by default
 
 
-
 class Category(db.Model):
     __tablename__ = "category"
     category_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -77,8 +76,6 @@ class Service(db.Model):
         self.image = image
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
-
-
 
 
 class ServiceRequest(db.Model):
@@ -145,3 +142,13 @@ class Review(db.Model):
         self.reply = reply
         self.created_at = datetime.utcnow()
 
+class ContactMessage(db.Model):
+    __tablename__ = 'contact_messages'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<ContactMessage {self.id} - {self.email}>"

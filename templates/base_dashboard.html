@@ -153,6 +153,7 @@
                                 <!-- Member List Link Only for Admin -->
                                 {% if session.get('role') == 'admin' %}
                                     <li><a class="dropdown-item" href="{{ url_for('member_list') }}">Member List</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('view_contact_messages') }}">Mail Box</a></li>
                                 {% endif %}
                             </ul>
                         </li>
