@@ -86,8 +86,17 @@ Profile
                     {% endif %}
                 </div>
                 <div class="card-footer text-center">
+                    <!-- Edit Profile Button -->
                     <a href="{{ url_for('edit_profile', user_id=user.user_id) }}" class="btn btn-warning me-2">Edit Profile</a>
+                    
+                    <!-- Forgot Password Button -->
+                    <!-- <form action="{{ url_for('logout_and_redirect_to_forgot') }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-info me-2">Change Password</button>
+                    </form> -->
+
+                    <!-- Delete Profile Button -->
                     <a href="{{ url_for('delete_profile', user_id=user.user_id) }}" class="btn btn-danger">Delete Account</a>
+                    
 
                         <!-- Go Back Button -->
                         <div class="mt-4">

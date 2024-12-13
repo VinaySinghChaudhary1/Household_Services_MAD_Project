@@ -8,7 +8,7 @@ import os  # for path
 from db import db    # for db
 from model import User, Category, Service, ServiceRequest, Review , ContactMessage     # for models
 from functools import wraps  # for login_required
-
+import re    # for regex(for validation set)
 
 app = Flask(__name__)
 
@@ -178,6 +178,45 @@ def login():
     # Render the login page for GET request
     return render_template('users/login.html')
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+
+        # Validate username and email in the database
+        user = User.query.filter_by(username=username, email=email).first()
+        if user:
+            # Redirect with query parameters to display the password reset form
+            flash("User validated. Set a new password below.", "success")
+            return redirect(url_for('forgot_password', valid='true', username=username, email=email))
+        else:
+            flash("Invalid username or email. Please try again.", "danger")
+            return redirect(url_for('forgot_password'))
+
+    return render_template('users/forgot_password.html')
+
+@app.route('/set_new_password', methods=['POST'])
+def set_new_password():
+    username = request.form.get('username')
+    email = request.form.get('email')
+    new_password = request.form.get('new_password')
+
+    # Validate user again to ensure consistency
+    user = User.query.filter_by(username=username, email=email).first()
+    if user:
+        # Update the user's password
+        hashed_password = generate_password_hash(new_password)
+        user.password = hashed_password
+        db.session.commit()
+
+        flash("Your password has been updated. You can now log in.", "success")
+        return redirect(url_for('login'))
+    else:
+        flash("Error updating password. Please try again.", "danger")
+        return redirect(url_for('forgot_password'))
+
+
 @app.route('/register_customer', methods=['GET', 'POST'])
 def register_customer():
     if request.method == 'POST':
@@ -198,6 +237,17 @@ def register_customer():
             if password != confirm_password:
                 flash("Passwords do not match. Please try again.", "warning")
                 return redirect(url_for('register_customer'))
+
+            # Password validation
+            # if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$', password):
+            #     flash("Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.", "warning")
+            #     return redirect(url_for('register_customer'))
+
+            # Email format validation
+            # email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+            # if not re.match(email_pattern, email):
+            #     flash("Invalid email format. Please enter a valid email.", "danger")
+            #     return redirect(url_for('register_customer'))
 
             # Check if email or username already exists in the database
             existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
@@ -235,7 +285,6 @@ def register_customer():
     # For GET request, render the registration page
     return render_template('users/register_customer.html')
 
-
 @app.route('/register_supplier', methods=['GET', 'POST'])
 def register_supplier():
     # Fetch all existing categories for the dropdown
@@ -272,6 +321,16 @@ def register_supplier():
             if password != confirm_password:
                 flash("Passwords do not match", "warning")
                 return redirect(url_for('register_supplier'))
+
+            # Password validation
+            # if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$', password):
+            #     flash("Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.", "warning")
+            #     return redirect(url_for('register_supplier'))
+
+            # email_pattern = r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$'
+            # if not re.match(email_pattern, email):
+            #     flash("Invalid email format. Please enter a valid email.", "danger")
+            #     return redirect(url_for('register_supplier'))
 
             # Check if email or username already exists
             existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
@@ -525,6 +584,13 @@ def delete_profile(user_id):
 
     return render_template('profile/delete_profile.html', user=user)
 
+@app.route('/logout_and_redirect_to_forgot', methods=['POST'])
+def logout_and_redirect_to_forgot():
+    # Clear session data to log out the user
+    session.clear()
+    flash("You have been logged out. Please set a new password.", "info")
+    # Redirect to the forgot password page
+    return redirect(url_for('forgot_password'))  # Ensure 'forgot_password' route is defined
 
 
 
@@ -1135,6 +1201,7 @@ def supplier_summary(user_id):
 @app.route('/summary/admin')
 @login_required("admin")
 def admin_summary():
+    # Ensure the user is an admin
     if session.get('role') != 'admin':
         flash("Unauthorized access to the admin summary.", "danger")
         return redirect(url_for('login'))
@@ -1156,6 +1223,11 @@ def admin_summary():
     customer_count = User.query.filter_by(role='customer').count()
     supplier_count = User.query.filter_by(role='supplier').count()
 
+    # Fetch counts of blocked customers and suppliers
+    # blocked_customer_count = User.query.filter_by(role='customer', is_blocked=True).count()
+    # blocked_supplier_count = User.query.filter_by(role='supplier', is_blocked=True).count()
+
+    # Render the admin summary page
     return render_template('summary/admin_summary.html', 
                            total_requests=total_requests, 
                            pending_count=pending_count, 
@@ -1163,10 +1235,13 @@ def admin_summary():
                            rejected_count=rejected_count,
                            completed_count=completed_count,
                            returned_count=returned_count,
+                           cancelled_count=cancelled_count,
                            avg_rating=avg_rating,
                            customer_count=customer_count,
-                           cancelled_count=cancelled_count,
-                           supplier_count=supplier_count)
+                           supplier_count=supplier_count,)
+                        #    blocked_customer_count=blocked_customer_count,
+                        #    blocked_supplier_count=blocked_supplier_count)
+
 
 
 
