@@ -239,15 +239,15 @@ def register_customer():
                 return redirect(url_for('register_customer'))
 
             # Password validation
-            # if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$', password):
-            #     flash("Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.", "warning")
-            #     return redirect(url_for('register_customer'))
+            if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$', password):
+                flash("Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.", "warning")
+                return redirect(url_for('register_customer'))
 
             # Email format validation
-            # email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-            # if not re.match(email_pattern, email):
-            #     flash("Invalid email format. Please enter a valid email.", "danger")
-            #     return redirect(url_for('register_customer'))
+            email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+            if not re.match(email_pattern, email):
+                flash("Invalid email format. Please enter a valid email.", "danger")
+                return redirect(url_for('register_customer'))
 
             # Check if email or username already exists in the database
             existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
@@ -323,14 +323,14 @@ def register_supplier():
                 return redirect(url_for('register_supplier'))
 
             # Password validation
-            # if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$', password):
-            #     flash("Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.", "warning")
-            #     return redirect(url_for('register_supplier'))
+            if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$', password):
+                flash("Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.", "warning")
+                return redirect(url_for('register_supplier'))
 
-            # email_pattern = r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$'
-            # if not re.match(email_pattern, email):
-            #     flash("Invalid email format. Please enter a valid email.", "danger")
-            #     return redirect(url_for('register_supplier'))
+            email_pattern = r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_pattern, email):
+                flash("Invalid email format. Please enter a valid email.", "danger")
+                return redirect(url_for('register_supplier'))
 
             # Check if email or username already exists
             existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
@@ -1224,8 +1224,8 @@ def admin_summary():
     supplier_count = User.query.filter_by(role='supplier').count()
 
     # Fetch counts of blocked customers and suppliers
-    # blocked_customer_count = User.query.filter_by(role='customer', is_blocked=True).count()
-    # blocked_supplier_count = User.query.filter_by(role='supplier', is_blocked=True).count()
+    blocked_customer_count = User.query.filter_by(role='customer', is_blocked=True).count()
+    blocked_supplier_count = User.query.filter_by(role='supplier', is_blocked=True).count()
 
     # Render the admin summary page
     return render_template('summary/admin_summary.html', 
@@ -1238,10 +1238,9 @@ def admin_summary():
                            cancelled_count=cancelled_count,
                            avg_rating=avg_rating,
                            customer_count=customer_count,
-                           supplier_count=supplier_count,)
-                        #    blocked_customer_count=blocked_customer_count,
-                        #    blocked_supplier_count=blocked_supplier_count)
-
+                           supplier_count=supplier_count,
+                           blocked_customer_count=blocked_customer_count,
+                           blocked_supplier_count=blocked_supplier_count)
 
 
 
