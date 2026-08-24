@@ -22,12 +22,13 @@
 7. [User Roles & Access Control](#-user-roles--access-control)
 8. [Application Flow](#-application-flow)
 9. [Login & Authentication Flow (Demo Walkthrough)](#-login--authentication-flow-demo-walkthrough)
-10. [Configuration Files Explained](#-configuration-files-explained)
-11. [Installation & Setup](#-installation--setup)
-12. [Creating the First Admin Account](#-creating-the-first-admin-account)
-13. [Environment Variables & Security Notes](#-environment-variables--security-notes)
-14. [Known Limitations & Future Enhancements](#-known-limitations--future-enhancements)
-15. [License](#-license)
+10. [Credentials Overview](#-credentials-overview)
+11. [Configuration Files Explained](#-configuration-files-explained)
+12. [Installation & Setup](#-installation--setup)
+13. [Creating the First Admin Account](#-creating-the-first-admin-account)
+14. [Environment Variables & Security Notes](#-environment-variables--security-notes)
+15. [Known Limitations & Future Enhancements](#-known-limitations--future-enhancements)
+16. [License](#-license)
 
 ---
 
@@ -441,6 +442,25 @@ sequenceDiagram
 4. The supplier can now log in via `/login` (role = Supplier) and lands on `/supplier_dashboard`.
 
 **Forgot password:** `/forgot_password` validates a matching username + email pair, then `/set_new_password` re-hashes and saves the new password — no email delivery is involved; it is a direct in-app reset.
+
+---
+
+## 🔑 Credentials Overview
+
+Below are pre-seeded demo credentials for each user role available in `instance/database.sqlite3`:
+
+| Role | Username | Email | Password | Account Status |
+|------|----------|-------|----------|----------------|
+| **Admin** | `admin` | `admin@gmail.com` | `Admin@123` | Active Platform Admin |
+| **Customer** | `vinay123` | `vinay123@gmail.com` | `vinay123` | Active Customer |
+| **Customer** | `vivek123` | `vivek123@gmail.com` | `vivek123` | Active Customer |
+| **Customer** | `ravi123` | `ravi123@gmail.com` | `ravi123` | Active Customer |
+| **Supplier** | `deeya123` | `deeya123@gmail.com` | `deeya123` | Verified Supplier |
+| **Supplier** | `vikas123` | `vikas123@gmail.com` | `vikas123` | Verified Supplier |
+| **Supplier** | `anoop123` | `anoop123@gmail.com` | `anoop123` | Verified Supplier |
+| **Supplier** | `ani123` | `ani123@gmail.com` | `ani123` | Verified Supplier |
+
+> **Note:** When logging in at `/login`, ensure you select the corresponding **Role** (Admin, Customer, or Supplier) from the login form dropdown.
 
 ---
 
